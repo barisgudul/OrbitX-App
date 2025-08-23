@@ -4,7 +4,7 @@ import { Text, View } from 'react-native';
 export default function DovizScreen() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Döviz Ekranı</Text>
+      <Text>Altın Ekranı</Text>
     </View>
   );
 }
