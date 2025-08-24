@@ -1,20 +1,25 @@
+// app/(tabs)/index.tsx
+
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import AssetListItem from '../../components/AssetListItem';
 import { Colors, FontSize } from '../../constants/Theme';
-import { useMetalData } from '../../hooks/useMetalData';
+import { useCryptoData } from '../../hooks/useCryptoData';
 
-type SortType = 'default' | 'name-asc' | 'price-desc';
+// Sıralama türleri için bir tip tanımı
+type SortType = 'default' | 'name-asc' | 'price-desc' | 'change-desc';
 
-export default function AltinScreen() {
-  const { data: originalData, isLoading, isError, refetch, isFetching } = useMetalData();
+export default function CryptoScreen() {
+  const { data: originalData, isLoading, isError, refetch, isFetching } = useCryptoData();
 
+  // YENİ STATE'LER
   const [searchQuery, setSearchQuery] = useState('');
   const [sortType, setSortType] = useState<SortType>('default');
 
   const filteredAndSortedData = useMemo(() => {
     if (!originalData) return [];
 
+    // 1. Filtreleme
     const q = searchQuery.trim().toLowerCase();
     let filtered = originalData.filter(asset => {
       if (!q) return true;
@@ -24,12 +29,16 @@ export default function AltinScreen() {
       );
     });
 
+    // 2. Sıralama
     switch (sortType) {
       case 'name-asc':
         filtered.sort((a, b) => a.name.localeCompare(b.name));
         break;
       case 'price-desc':
         filtered.sort((a, b) => b.currentPrice - a.currentPrice);
+        break;
+      case 'change-desc':
+        filtered.sort((a, b) => b.priceChangePercentage24h - a.priceChangePercentage24h);
         break;
       case 'default':
       default:
@@ -57,6 +66,7 @@ export default function AltinScreen() {
 
   return (
     <View style={styles.container}>
+      {/* --- ARAMA VE SIRALAMA BÖLÜMÜ --- */}
       <View style={styles.controlsContainer}>
         <TextInput
           style={styles.searchInput}
@@ -66,6 +76,7 @@ export default function AltinScreen() {
           onChangeText={setSearchQuery}
         />
 
+        {/* --- YENİ SIRALAMA BUTONLARI BÖLÜMÜ --- */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sortContainer}>
           <TouchableOpacity
             style={[styles.sortButton, sortType === 'default' && styles.sortButtonActive]}
@@ -87,14 +98,25 @@ export default function AltinScreen() {
           >
             <Text style={[styles.sortButtonText, sortType === 'price-desc' && styles.sortButtonTextActive]}>Fiyat ↓</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.sortButton, sortType === 'change-desc' && styles.sortButtonActive]}
+            onPress={() => setSortType('change-desc')}
+          >
+            <Text style={[styles.sortButtonText, sortType === 'change-desc' && styles.sortButtonTextActive]}>Değişim ↓</Text>
+          </TouchableOpacity>
         </ScrollView>
       </View>
 
+      {/* --- LİSTE BÖLÜMÜ --- */}
       <FlatList
         data={filteredAndSortedData}
         renderItem={({ item, index }) => <AssetListItem asset={item} index={index} />}
         keyExtractor={(item) => item.id}
-        ListEmptyComponent={<Text style={styles.emptyText}>Sonuç bulunamadı.</Text>}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>Sonuç bulunamadı.</Text>
+        }
+        // Pull to refresh
         onRefresh={refetch}
         refreshing={isFetching}
       />
@@ -107,6 +129,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  // --- YENİ STİLLER ---
   controlsContainer: {
     paddingHorizontal: 16,
     paddingTop: 16,
