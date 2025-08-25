@@ -1,4 +1,4 @@
-// components/AssetListItem.tsx (DOĞRU VE ÇALIŞAN HALİ)
+// components/AssetListItem.tsx (MİNİMALİST VE ZARİF TASARIM)
 
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import { Link } from 'expo-router';
@@ -6,7 +6,7 @@ import { MotiView } from 'moti';
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SvgUri } from 'react-native-svg';
-import { Colors, FontSize } from '../constants/Theme';
+import { Colors } from '../constants/Theme';
 import { useFavoritesStore } from '../store/favoritesStore';
 import { FinancialAsset } from '../types';
 
@@ -37,57 +37,55 @@ interface AssetListItemProps {
 const AssetListItem: React.FC<AssetListItemProps> = ({ asset, index = 0 }) => {
   const { toggleFavorite, isFavorite } = useFavoritesStore();
   const isAssetFavorite = isFavorite(asset.id);
-
   const priceChangeColor = asset.priceChangePercentage24h >= 0 ? Colors.accentGreen : Colors.accentRed;
 
   return (
     <MotiView
       from={{ opacity: 0, translateY: 20 }}
       animate={{ opacity: 1, translateY: 0 }}
-      transition={{ type: 'timing', duration: 500, delay: index * 60 }}
+      transition={{ type: 'timing', duration: 300, delay: index * 50 }}
     >
       <Link href={`/${asset.id}`} asChild>
         <Pressable>
           {({ pressed }) => (
-            <View style={[styles.container, { backgroundColor: pressed ? '#161b22' : 'transparent' }]}>
+            <View style={[styles.container, { backgroundColor: pressed ? '#101010' : 'transparent' }]}>
+              {/* Sol Taraf: İkon ve İsimler */}
               <View style={styles.leftContainer}>
-                <View style={styles.iconContainer}>
-                  {renderIcon(asset)}
-                </View>
+                <View style={styles.iconContainer}>{renderIcon(asset)}</View>
                 <View style={styles.nameContainer}>
                   <Text style={styles.name}>{asset.symbol}</Text>
                   <Text style={styles.symbol}>{asset.name}</Text>
                 </View>
               </View>
 
-              <View style={styles.rightContainer}>
-                <View style={styles.priceContainer}>
-                  <Text style={styles.price}>
-                    ₺{asset.currentPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+              {/* Orta Taraf: Fiyat ve Değişim */}
+              <View style={styles.priceContainer}>
+                <Text style={styles.price}>
+                  ₺{asset.currentPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                </Text>
+                {asset.tip === 'crypto' && (
+                  <Text style={[styles.change, { color: priceChangeColor }]}>
+                    {asset.priceChangePercentage24h.toFixed(2)}%
                   </Text>
-                  {asset.tip === 'crypto' && (
-                    <Text style={[styles.change, { color: priceChangeColor }]}> 
-                      {asset.priceChangePercentage24h.toFixed(2)}%
-                    </Text>
-                  )}
-                </View>
-
-                <TouchableOpacity
-                  onPress={(e: any) => {
-                    // Prevent the Link navigation when star is pressed
-                    if (e && typeof e.preventDefault === 'function') e.preventDefault();
-                    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-                    toggleFavorite(asset.id);
-                  }}
-                  style={styles.starContainer}
-                >
-                  <FontAwesome
-                    name={isAssetFavorite ? 'star' : 'star-o'}
-                    size={24}
-                    color={isAssetFavorite ? '#FFD700' : Colors.textSecondary}
-                  />
-                </TouchableOpacity>
+                )}
               </View>
+
+              {/* Sağ Taraf: Favori Yıldızı */}
+              <TouchableOpacity
+                onPress={(e: any) => {
+                  // Prevent the Link navigation when star is pressed
+                  if (e && typeof e.preventDefault === 'function') e.preventDefault();
+                  if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+                  toggleFavorite(asset.id);
+                }}
+                style={styles.starContainer}
+              >
+                <FontAwesome
+                  name={isAssetFavorite ? 'star' : 'star-o'}
+                  size={22}
+                  color={isAssetFavorite ? '#FFD700' : Colors.textSecondary}
+                />
+              </TouchableOpacity>
             </View>
           )}
         </Pressable>
@@ -99,43 +97,62 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ asset, index = 0 }) => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    paddingVertical: 12, // Dikey boşluğu artırdık
+    paddingHorizontal: 16,
   },
   leftContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  rightContainer: {
+    flex: 1, // Sol tarafın mümkün olduğunca genişlemesini sağla
     flexDirection: 'row',
     alignItems: 'center',
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    marginRight: 12,
+    width: 42,
+    height: 42,
+    marginRight: 14, // Boşluğu artırdık
     justifyContent: 'center',
     alignItems: 'center',
   },
   image: {
-    width: 40,
-    height: 40,
+    width: 42,
+    height: 42,
   },
-  nameContainer: { flex: 1 },
-  name: { color: Colors.textPrimary, fontSize: FontSize.body, fontWeight: '600' },
-  symbol: { color: Colors.textSecondary, fontSize: FontSize.caption },
-  priceContainer: { alignItems: 'flex-end' },
-  price: { color: Colors.textPrimary, fontSize: FontSize.body, fontWeight: '600' },
-  change: { fontSize: FontSize.caption, fontWeight: '600' },
+  nameContainer: {},
+  name: {
+    color: Colors.textPrimary,
+    fontSize: 17, // Fontu biraz büyüttük
+    fontWeight: '600',
+  },
+  symbol: {
+    color: Colors.textSecondary,
+    fontSize: 14, // Fontu biraz büyüttük
+    paddingTop: 4, // İsimle arasını açtık
+  },
+  priceContainer: {
+    alignItems: 'flex-end',
+    paddingHorizontal: 16, // Yıldızla arasına boşluk koy
+  },
+  price: {
+    color: Colors.textPrimary,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  change: {
+    fontSize: 13,
+    fontWeight: '500',
+    paddingTop: 4,
+  },
   starContainer: {
-    paddingLeft: 16,
-    paddingVertical: 8,
+    padding: 8, // Dokunma alanını büyüt
+  },
+  separator: {
+    height: 1,
+    backgroundColor: Colors.border,
+    marginLeft: 72, // İkon + boşluk kadar içeriden başlat
   },
 });
 
-export default AssetListItem;
+// Zarif Ayırıcı Çizgi için yeni bir bileşen
+const ItemSeparator = () => <View style={styles.separator} />;
+
+export { AssetListItem, ItemSeparator }; // İki bileşeni de export et

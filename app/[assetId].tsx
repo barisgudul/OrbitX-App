@@ -86,7 +86,12 @@ export default function AssetDetailScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
-      <Stack.Screen options={{ title: asset.symbol.toUpperCase() }} />
+      {/* SADECE DİNAMİK BAŞLIĞI AYARLIYORUZ */}
+      <Stack.Screen 
+        options={{ 
+          title: asset.symbol.toUpperCase(),
+        }} 
+      />
       
       <View style={styles.headerContainer}>
         <View style={styles.titleRow}>
