@@ -5,7 +5,6 @@ import Constants from 'expo-constants';
 import { FinancialAsset } from '../types';
 
 // --- API Anahtarları ---
-const EXCHANGE_RATE_API_KEY = Constants.expoConfig?.extra?.exchangeRateApiKey;
 
 // ------------------- CRYPTO DATA -------------------
 // ... Bu kısım aynı, hiç dokunmuyoruz ...
