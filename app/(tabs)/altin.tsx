@@ -6,7 +6,7 @@ import { AssetListItemSkeleton } from '../../components/AssetListItemSkeleton'; 
 import { CustomHeader } from '../../components/CustomHeader'; // Header'ı burada import et
 import { ErrorState } from '../../components/ErrorState'; // Yeni bileşeni import et
 import { Colors, FontSize } from '../../constants/Theme';
-import { useMetalData } from '../../hooks/useMetalData';
+import { useGoldData } from '../../hooks/useGoldData';
 
 // YENİ VE GELİŞMİŞ SortType
 type SortType = 
@@ -15,7 +15,7 @@ type SortType =
   | 'price-asc' | 'price-desc';
 
 export default function AltinScreen() {
-  const { data: originalData, isLoading, isError, refetch } = useMetalData();
+  const { data: originalData, isLoading, isError, refetch } = useGoldData();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortType, setSortType] = useState<SortType>('default');
@@ -72,7 +72,7 @@ export default function AltinScreen() {
     return (
       <SafeAreaView style={styles.container}>
         {/* Kendi başlığımızı güvenli alanın içine koyuyoruz */}
-        <CustomHeader title="Metaller" />
+        <CustomHeader title="Altın" />
         
         {/* Arama çubuğunun da iskeletini gösterebiliriz veya direkt listeyi gösteririz */}
         <View style={styles.contentContainer}>
@@ -107,7 +107,7 @@ export default function AltinScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {/* Kendi başlığımızı güvenli alanın içine koyuyoruz */}
-      <CustomHeader title="Metaller" />
+      <CustomHeader title="Altın" />
 
       {/* Geri kalan her şey bir View içinde */}
       <View style={styles.contentContainer}>

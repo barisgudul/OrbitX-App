@@ -22,7 +22,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="favoriler" options={{ title: 'Favoriler', tabBarIcon: ({ color }) => <FontAwesome size={24} name="star" color={color} /> }} />
       <Tabs.Screen name="index" options={{ title: 'Döviz', tabBarIcon: ({ color }) => <FontAwesome size={24} name="dollar" color={color} /> }} />
       <Tabs.Screen name="crypto" options={{ title: 'Kripto', tabBarIcon: ({ color }) => <FontAwesome size={24} name="bitcoin" color={color} /> }} />
-      <Tabs.Screen name="altin" options={{ title: 'Metaller', tabBarIcon: ({ color }) => <FontAwesome size={24} name="database" color={color} /> }} />
+      <Tabs.Screen name="altin" options={{ title: 'Altın', tabBarIcon: ({ color }) => <FontAwesome size={24} name="database" color={color} /> }} />
       <Tabs.Screen name="portfolio" options={{ title: 'Portföy', tabBarIcon: ({ color }) => <FontAwesome size={24} name="pie-chart" color={color} /> }} />
     </Tabs>
   );

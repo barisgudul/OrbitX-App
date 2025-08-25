@@ -1,6 +1,6 @@
 // components/AssetListItem.tsx (MİNİMALİST VE ZARİF TASARIM)
 
-import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { MotiView } from 'moti';
 import React from 'react';
@@ -16,9 +16,23 @@ const renderIcon = (asset: FinancialAsset) => {
   switch (asset.tip) {
     case 'metal':
       switch (asset.symbol) {
-        case 'XAU': return <FontAwesome5 name="coins" size={iconSize} color="#FFD700" />;
-        case 'XAG': return <FontAwesome5 name="coins" size={iconSize} color="#C0C0C0" />;
-        default: return <FontAwesome5 name="database" size={iconSize} color={Colors.textSecondary} />;
+        // Altınlar
+        case 'GR': case 'ÇEY': case 'YRM': case 'TAM': case 'CUM':
+        case 'ATA': case 'REŞ': case 'HAM': case 'İKİ': case 'GRE':
+        case 'BEŞ': case '14A': case '18A': case '22A':
+          return <FontAwesome5 name="coins" size={iconSize} color="#FFD700" />;
+        
+        // Diğer Metaller
+        case 'GÜM': return <FontAwesome5 name="coins" size={iconSize} color="#C0C0C0" />;
+        case 'PL': return <MaterialCommunityIcons name="ring" size={iconSize} color="#E5E4E2" />;
+        case 'PA': return <MaterialCommunityIcons name="cube-outline" size={iconSize} color="#CED0DD" />;
+
+        // Emtia ve Endeks
+        case 'BRENT': return <FontAwesome5 name="tint" size={iconSize} color="#6495ED" />; // Petrol için damla ikonu
+        case 'XU100': return <FontAwesome5 name="chart-line" size={iconSize} color={Colors.primary} />; // Borsa için grafik ikonu
+
+        default:
+          return <FontAwesome5 name="database" size={iconSize} color={Colors.textSecondary} />;
       }
     case 'doviz':
       return asset.image ? <SvgUri width={40} height={40} uri={asset.image} /> : null;
@@ -63,7 +77,8 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ asset, index = 0 }) => {
                 <Text style={styles.price}>
                   ₺{asset.currentPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
                 </Text>
-                {asset.tip === 'crypto' && (
+                {/* DEĞİŞİKLİK: Sadece kripto değil, metal için de göster */}
+                {(asset.tip === 'crypto' || asset.tip === 'metal') && (
                   <Text style={[styles.change, { color: priceChangeColor }]}>
                     {asset.priceChangePercentage24h.toFixed(2)}%
                   </Text>

@@ -6,7 +6,6 @@ import { FinancialAsset } from '../types';
 
 // --- API Anahtarları ---
 const EXCHANGE_RATE_API_KEY = Constants.expoConfig?.extra?.exchangeRateApiKey;
-const METAL_PRICE_API_KEY = Constants.expoConfig?.extra?.metalPriceApiKey;
 
 // ------------------- CRYPTO DATA -------------------
 // ... Bu kısım aynı, hiç dokunmuyoruz ...
@@ -98,68 +97,74 @@ const transformCurrencyData = (apiData: any): FinancialAsset[] => {
   });
 };
 
-// --- Metal Verisi (YENİDEN YAPILANDIRILDI) ---
+// ------------------- GOLD DATA (GERÇEK API VERİSİNE GÖRE NİHAİ VERSİYON) -------------------
 
-const ONS_TO_GRAM_CONVERSION_RATE = 31.1035;
+const TRUNCGIL_API_URL = 'https://finans.truncgil.com/v4/today.json';
 
-const transformMetalData = (apiData: any, usdToTryRate: number): FinancialAsset[] => {
-  const rates = apiData.rates;
-  
-  const metalDetails = {
-    XAU: { name: 'Altın (Gram)', symbol: 'XAU' },
-    XAG: { name: 'Gümüş (Gram)', symbol: 'XAG' },
-    XPT: { name: 'Platin (Ons)', symbol: 'XPT' },
-    XPD: { name: 'Paladyum (Ons)', symbol: 'XPD' },
-  };
-
-  return Object.keys(metalDetails).map(symbol => {
-    if (!rates[symbol]) return null;
+const transformTruncgilData = (apiData: any): FinancialAsset[] => {
+  // DEĞİŞİKLİK: Listeyi API'deki tüm ilgili varlıkları içerecek şekilde genişletiyoruz
+  const targetAssets = [
+    // Altınlar
+    { apiKey: 'GRA', name: 'Gram Altın', symbol: 'GR', tip: 'metal' as const },
+    { apiKey: 'CEYREKALTIN', name: 'Çeyrek Altın', symbol: 'ÇEY', tip: 'metal' as const },
+    { apiKey: 'YARIMALTIN', name: 'Yarım Altın', symbol: 'YRM', tip: 'metal' as const },
+    { apiKey: 'TAMALTIN', name: 'Tam Altın', symbol: 'TAM', tip: 'metal' as const },
+    { apiKey: 'CUMHURIYETALTINI', name: 'Cumhuriyet Altını', symbol: 'CUM', tip: 'metal' as const },
+    { apiKey: 'ATAALTIN', name: 'Ata Altın', symbol: 'ATA', tip: 'metal' as const },
+    { apiKey: 'RESATALTIN', name: 'Reşat Altın', symbol: 'REŞ', tip: 'metal' as const },
+    { apiKey: 'HAMITALTIN', name: 'Hamit Altın', symbol: 'HAM', tip: 'metal' as const },
+    { apiKey: 'IKIBUCUKALTIN', name: 'İkibuçuk Altın', symbol: 'İKİ', tip: 'metal' as const },
+    { apiKey: 'GREMSEALTIN', name: 'Gremse Altın', symbol: 'GRE', tip: 'metal' as const },
+    { apiKey: 'BESLIALTIN', name: 'Beşli Altın', symbol: 'BEŞ', tip: 'metal' as const },
+    { apiKey: '14AYARALTIN', name: '14 Ayar Altın', symbol: '14A', tip: 'metal' as const },
+    { apiKey: '18AYARALTIN', name: '18 Ayar Altın', symbol: '18A', tip: 'metal' as const },
+    { apiKey: 'YIA', name: '22 Ayar Bilezik', symbol: '22A', tip: 'metal' as const },
     
-    const details = metalDetails[symbol as keyof typeof metalDetails];
-    // API'den gelen 1 Ons'un USD fiyatı
-    let priceInUsd = 1 / rates[symbol]; 
-    // USD fiyatını TRY fiyatına çevir
-    let priceInTry = priceInUsd * usdToTryRate;
+    // Diğer Metaller
+    { apiKey: 'GUMUS', name: 'Gümüş (Gram)', symbol: 'GÜM', tip: 'metal' as const },
+    { apiKey: 'GPL', name: 'Platin (Gram)', symbol: 'PL', tip: 'metal' as const },
+    { apiKey: 'PAL', name: 'Paladyum (Gram)', symbol: 'PA', tip: 'metal' as const },
 
-    if (symbol === 'XAU' || symbol === 'XAG') {
-      priceInTry = priceInTry / ONS_TO_GRAM_CONVERSION_RATE;
-    }
+    // Emtia ve Endeksler (Bunları da 'metal' tipi altında gösterebiliriz)
+    { apiKey: 'BRENT', name: 'Brent Petrol', symbol: 'BRENT', tip: 'metal' as const },
+    { apiKey: 'XU100', name: 'Bist 100', symbol: 'XU100', tip: 'metal' as const },
+  ];
 
-    return {
-      id: symbol,
-      name: details.name,
-      symbol: details.symbol,
-      currentPrice: priceInTry,
-      priceChangePercentage24h: 0,
-      tip: 'metal',
-    };
-  }).filter((item): item is FinancialAsset => item !== null);
+  return targetAssets
+    .map(details => {
+      const assetItem = apiData[details.apiKey];
+      // Eğer API cevabında o varlık yoksa (örn: hafta sonu), listeye ekleme
+      if (!assetItem || !assetItem.Selling) return null;
+
+      // BRENT ve ONS için fiyatlar USD, bunları TRY'ye çevirmemiz gerekebilir.
+      // Şimdilik API'den gelen değeri direkt alalım. Eğer 0 geliyorsa, göstermeyelim.
+      if (assetItem.Selling === 0) return null;
+      
+      return {
+        id: details.apiKey, // ID olarak API'nin anahtarını (GRA, CEYREKALTIN vb.) kullanalım
+        name: details.name,
+        symbol: details.symbol,
+        // DEĞİŞİKLİK: Veri alanlarını gerçek API çıktısına göre güncelliyoruz (Selling, Change)
+        currentPrice: assetItem.Selling,
+        priceChangePercentage24h: assetItem.Change,
+        tip: details.tip,
+        image: '', // İkonları AssetListItem'da sembole göre belirleyeceğiz
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null); // Dizideki null değerleri temizle
 };
 
-export const fetchMetalData = async (): Promise<FinancialAsset[]> => {
-  if (!METAL_PRICE_API_KEY || !EXCHANGE_RATE_API_KEY) {
-    throw new Error("API Key for Metal or ExchangeRate is missing.");
-  }
-
-  const METAL_API_URL = `https://api.metalpriceapi.com/v1/latest?api_key=${METAL_PRICE_API_KEY}&base=USD&currencies=XAU,XAG,XPT,XPD`;
-  const CURRENCY_API_URL = `https://v6.exchangerate-api.com/v6/${EXCHANGE_RATE_API_KEY}/latest/USD`;
-
+export const fetchGoldData = async (): Promise<FinancialAsset[]> => {
   try {
-    // İki API isteğini aynı anda yap
-    const [metalResponse, currencyResponse] = await Promise.all([
-      axios.get(METAL_API_URL),
-      axios.get(CURRENCY_API_URL)
-    ]);
-
-    if (metalResponse.data.success && currencyResponse.data.result === 'success') {
-      const usdToTryRate = currencyResponse.data.conversion_rates.TRY;
-      return transformMetalData(metalResponse.data, usdToTryRate);
+    const response = await axios.get(TRUNCGIL_API_URL, { timeout: 10000 }); // Timeout'u biraz artıralım
+    if (response.data) {
+      return transformTruncgilData(response.data);
     } else {
-      throw new Error("Failed to fetch data from one of the APIs");
+      throw new Error("API response is empty");
     }
   } catch (error) {
-    console.error("API Error fetching combined metal data:", error);
-    throw new Error("Failed to fetch metal data");
+    console.error("API Error fetching Truncgil gold data:", error);
+    throw new Error("Failed to fetch gold data");
   }
 };
 
