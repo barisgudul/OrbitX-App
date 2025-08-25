@@ -1,12 +1,12 @@
 // app/(tabs)/index.tsx (DOĞRU VE NİHAİ LAYOUT)
-import React, { useCallback, useMemo, useState } from 'react'; // useCallback'i import et
+import React, { useMemo, useState } from 'react'; // useCallback'i import et
 import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { AssetListItem, ItemSeparator } from '../../components/AssetListItem';
-import { AssetListItemSkeleton } from '../../components/AssetListItemSkeleton'; // Yeni bileşeni import et
 import { CustomHeader } from '../../components/CustomHeader'; // Header'ı burada import et
+import { DovizListItem, ItemSeparator } from '../../components/DovizListItem';
 import { ErrorState } from '../../components/ErrorState'; // Yeni bileşeni import et
 import { Colors, FontSize } from '../../constants/Theme';
 import { useCurrencyData } from '../../hooks/useCurrencyData';
+import { FinancialAsset } from '../../types';
 
 // YENİ VE GELİŞMİŞ SortType
 type SortType = 
@@ -15,13 +15,10 @@ type SortType =
   | 'price-asc' | 'price-desc';
 
 export default function DovizScreen() {
-  const { data: originalData, isLoading, isError, refetch } = useCurrencyData();
+  const { data: originalData = [], isLoading, isError, refetch } = useCurrencyData();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortType, setSortType] = useState<SortType>('default');
-
-  // YENİ KISIM: Sadece kullanıcının başlattığı yenilemeyi takip etmek için bir state
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // YENİ SIRALAMA MANTIĞI
   const handleSortPress = (type: 'name' | 'price') => {
@@ -36,15 +33,7 @@ export default function DovizScreen() {
     }
   };
 
-  const handleRefresh = useCallback(async () => {
-    setIsRefreshing(true); // Manuel yenileme başladı
-    await refetch();      // Veriyi yeniden çek
-    setIsRefreshing(false); // Manuel yenileme bitti
-  }, [refetch]);
-
   const filteredAndSortedData = useMemo(() => {
-    if (!originalData) return [];
-
     const q = searchQuery.trim().toLowerCase();
     let filtered = originalData.filter(asset => {
       if (!q) return true;
@@ -58,8 +47,8 @@ export default function DovizScreen() {
     switch (sortType) {
       case 'name-asc': filtered.sort((a, b) => a.name.localeCompare(b.name)); break;
       case 'name-desc': filtered.sort((a, b) => b.name.localeCompare(a.name)); break;
-      case 'price-asc': filtered.sort((a, b) => a.currentPrice - b.currentPrice); break;
-      case 'price-desc': filtered.sort((a, b) => b.currentPrice - a.currentPrice); break;
+      case 'price-asc': filtered.sort((a, b) => a.satis - b.satis); break;
+      case 'price-desc': filtered.sort((a, b) => b.satis - a.satis); break;
       default: break;
     }
 
@@ -93,7 +82,7 @@ export default function DovizScreen() {
             </ScrollView>
           </View>
           {/* 5 adet iskelet elemanı gösterelim */}
-          {[...Array(5).keys()].map(i => <AssetListItemSkeleton key={i} />)}
+          {[...Array(5).keys()].map(i => <DovizListItem key={i} asset={{} as FinancialAsset} index={i} />)}
         </View>
       </SafeAreaView>
     );
@@ -151,14 +140,11 @@ export default function DovizScreen() {
 
         <FlatList
           data={filteredAndSortedData}
-          renderItem={({ item, index }) => <AssetListItem asset={item} index={index} />}
           keyExtractor={(item) => item.id}
-          ListEmptyComponent={<Text style={styles.emptyText}>Sonuç bulunamadı.</Text>}
-          // DEĞİŞEN PROPLAR
-          onRefresh={handleRefresh} // Bizim yeni, akıllı fonksiyonumuzu çağır
-          refreshing={isRefreshing} // Sadece bizim manuel yenileme durumumuza bak
-          contentContainerStyle={{ paddingTop: 10, paddingBottom: 10 }} // Üstte ve altta boşluk
+          renderItem={({ item, index }) => <DovizListItem asset={item} index={index} />}
           ItemSeparatorComponent={ItemSeparator}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
         />
       </View>
     </SafeAreaView>

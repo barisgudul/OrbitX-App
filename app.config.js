@@ -39,7 +39,6 @@ export default {
     
     // UYGULAMA İÇİNDEN ERİŞİLECEK EKSTRA VERİLER BURADA
     extra: {
-      exchangeRateApiKey: "58961ef4c2897c3b9cbfe3ca",
       newsApiKey:"e526d52091c04c2287907041a25f5d0f"
     }
   }

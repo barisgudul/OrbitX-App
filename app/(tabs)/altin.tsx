@@ -1,7 +1,7 @@
 // app/(tabs)/altin.tsx (DOĞRU VE NİHAİ LAYOUT)
-import React, { useCallback, useMemo, useState } from 'react'; // useCallback'i import et
+import React, { useMemo, useState } from 'react'; // useCallback'i import et
 import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { AssetListItem, ItemSeparator } from '../../components/AssetListItem';
+import { AltinListItem, ItemSeparator } from '../../components/AltinListItem';
 import { AssetListItemSkeleton } from '../../components/AssetListItemSkeleton'; // Yeni bileşeni import et
 import { CustomHeader } from '../../components/CustomHeader'; // Header'ı burada import et
 import { ErrorState } from '../../components/ErrorState'; // Yeni bileşeni import et
@@ -15,13 +15,10 @@ type SortType =
   | 'price-asc' | 'price-desc';
 
 export default function AltinScreen() {
-  const { data: originalData, isLoading, isError, refetch } = useGoldData();
+  const { data: originalData = [], isLoading, isError, refetch } = useGoldData();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortType, setSortType] = useState<SortType>('default');
-
-  // YENİ KISIM: Sadece kullanıcının başlattığı yenilemeyi takip etmek için bir state
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // YENİ SIRALAMA MANTIĞI
   const handleSortPress = (type: 'name' | 'price') => {
@@ -36,15 +33,7 @@ export default function AltinScreen() {
     }
   };
 
-  const handleRefresh = useCallback(async () => {
-    setIsRefreshing(true); // Manuel yenileme başladı
-    await refetch();      // Veriyi yeniden çek
-    setIsRefreshing(false); // Manuel yenileme bitti
-  }, [refetch]);
-
   const filteredAndSortedData = useMemo(() => {
-    if (!originalData) return [];
-
     const q = searchQuery.trim().toLowerCase();
     let filtered = originalData.filter(asset => {
       if (!q) return true;
@@ -58,8 +47,8 @@ export default function AltinScreen() {
     switch (sortType) {
       case 'name-asc': filtered.sort((a, b) => a.name.localeCompare(b.name)); break;
       case 'name-desc': filtered.sort((a, b) => b.name.localeCompare(a.name)); break;
-      case 'price-asc': filtered.sort((a, b) => a.currentPrice - b.currentPrice); break;
-      case 'price-desc': filtered.sort((a, b) => b.currentPrice - a.currentPrice); break;
+      case 'price-asc': filtered.sort((a, b) => a.satis - b.satis); break;
+      case 'price-desc': filtered.sort((a, b) => b.satis - a.satis); break;
       default: break;
     }
 
@@ -150,14 +139,11 @@ export default function AltinScreen() {
 
         <FlatList
           data={filteredAndSortedData}
-          renderItem={({ item, index }) => <AssetListItem asset={item} index={index} />}
           keyExtractor={(item) => item.id}
-          ListEmptyComponent={<Text style={styles.emptyText}>Sonuç bulunamadı.</Text>}
-          // DEĞİŞEN PROPLAR
-          onRefresh={handleRefresh} // Bizim yeni, akıllı fonksiyonumuzu çağır
-          refreshing={isRefreshing} // Sadece bizim manuel yenileme durumumuza bak
-          contentContainerStyle={{ paddingTop: 10, paddingBottom: 10 }} // Üstte ve altta boşluk
+          renderItem={({ item, index }) => <AltinListItem asset={item} index={index} />}
           ItemSeparatorComponent={ItemSeparator}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
         />
       </View>
     </SafeAreaView>

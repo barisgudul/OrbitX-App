@@ -1,90 +1,89 @@
 // app/(tabs)/favoriler.tsx (DOĞRU VE NİHAİ LAYOUT)
 
-import React, { useCallback, useState } from 'react'; // useCallback'i import et
-import { FlatList, SafeAreaView, StyleSheet, View } from 'react-native';
-import { AssetListItem, ItemSeparator } from '../../components/AssetListItem';
-import { AssetListItemSkeleton } from '../../components/AssetListItemSkeleton'; // Yeni bileşeni import et
-import { CustomHeader } from '../../components/CustomHeader'; // Header'ı burada import et
-import { EmptyState } from '../../components/EmptyState'; // Yeni bileşeni import et
-import { ErrorState } from '../../components/ErrorState'; // Yeni bileşeni import et
+import React from 'react';
+import { FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { AltinListItem } from '../../components/AltinListItem';
+import { CustomHeader } from '../../components/CustomHeader';
+import { DovizListItem } from '../../components/DovizListItem';
+import { PariteListItem } from '../../components/PariteListItem';
 import { Colors, FontSize } from '../../constants/Theme';
-import { useCombinedMarketData } from '../../hooks/useCombinedMarketData'; // Tüm verileri çeken hook
+import { useCombinedMarketData } from '../../hooks/useCombinedMarketData';
 import { useFavoritesStore } from '../../store/favoritesStore';
+import { FinancialAsset } from '../../types';
 
 export default function FavorilerScreen() {
-  // Önce tüm piyasa verilerini ve favori ID'lerini çek
-  const { data: allAssets, isLoading, isError, refetch } = useCombinedMarketData();
+  const { data: allAssets = [], isLoading, isError } = useCombinedMarketData();
   const { favorites } = useFavoritesStore();
 
-  // YENİ KISIM: Sadece kullanıcının başlattığı yenilemeyi takip etmek için bir state
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Tüm veriler içinden sadece ID'si favoriler listesinde olanları filtrele
   const favoriteAssets = allAssets.filter(asset => favorites.includes(asset.id));
 
-  const handleRefresh = useCallback(async () => {
-    setIsRefreshing(true); // Manuel yenileme başladı
-    await refetch();      // Veriyi yeniden çek
-    setIsRefreshing(false); // Manuel yenileme bitti
-  }, [refetch]);
+  const renderFavoriteItem = ({ item, index }: { item: FinancialAsset; index: number }) => {
+    // Güvenlik kontrolü ekle
+    if (!item || !item.tip) {
+      console.log('❌ Invalid item:', item);
+      return null; // Geçersiz item'ları render etme
+    }
 
-  // DEĞİŞİKLİK BURADA:
-  // Sadece ilk yüklemede ve elimizde hiç veri yokken tam ekran yükleme göstergesi göster.
-  if (isLoading && !allAssets) {
-    // Eğer veriler hala yükleniyorsa, bir yükleme göstergesi gösterelim
+    // Döviz için DovizListItem, Parite için PariteListItem, Altın için AltinListItem kullan
+    if (item.tip === 'doviz') {
+      return <DovizListItem asset={item} index={index} />;
+    } else if (item.tip === 'parite') {
+      return <PariteListItem asset={item} index={index} />;
+    } else {
+      return <AltinListItem asset={item} index={index} />;
+    }
+  };
+
+  const renderSeparator = () => {
+    // Sabit bir separator döndür, item'a bağımlı olmasın
+    return <View style={{ height: 1, backgroundColor: Colors.border }} />;
+  };
+
+  if (isLoading && favoriteAssets.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
-        {/* Kendi başlığımızı güvenli alanın içine koyuyoruz */}
         <CustomHeader title="Favoriler" />
-        
-        {/* 5 adet iskelet elemanı gösterelim */}
-        <View style={styles.contentContainer}>
-          {[...Array(5).keys()].map(i => <AssetListItemSkeleton key={i} />)}
+        <View style={styles.centerContent}>
+          <Text style={styles.loadingText}>Favoriler yükleniyor...</Text>
         </View>
       </SafeAreaView>
     );
   }
-  
+
   if (isError) {
-    // DEĞİŞİKLİK BURADA
-    return <ErrorState onRetry={refetch} />;
+    return (
+      <SafeAreaView style={styles.container}>
+        <CustomHeader title="Favoriler" />
+        <View style={styles.centerContent}>
+          <Text style={styles.errorText}>Veri yüklenirken hata oluştu.</Text>
+        </View>
+      </SafeAreaView>
+    );
   }
 
-  // Eğer hiç favori yoksa, bir bilgilendirme mesajı göster
   if (favoriteAssets.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
-        {/* Kendi başlığımızı güvenli alanın içine koyuyoruz */}
         <CustomHeader title="Favoriler" />
-        
-        <View style={styles.contentContainer}>
-          <EmptyState 
-            icon="star-o"
-            title="Henüz Favorin Yok"
-            message="Piyasa ekranlarındaki yıldız ikonuna dokunarak takip etmek istediğin varlıkları buraya ekleyebilirsin."
-          />
+        <View style={styles.centerContent}>
+          <Text style={styles.emptyText}>Henüz favori varlığınız yok.</Text>
+          <Text style={styles.emptySubtext}>Varlıkları favorilere ekleyerek burada takip edebilirsiniz.</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    // En dışı SafeAreaView ile sarmalıyoruz
     <SafeAreaView style={styles.container}>
-      {/* Kendi başlığımızı güvenli alanın içine koyuyoruz */}
       <CustomHeader title="Favoriler" />
-
-      {/* Geri kalan her şey bir View içinde */}
       <View style={styles.contentContainer}>
         <FlatList
           data={favoriteAssets}
-          renderItem={({ item, index }) => <AssetListItem asset={item} index={index} />}
-          keyExtractor={(item) => item.id}
-          // DEĞİŞEN PROPLAR
-          onRefresh={handleRefresh} // Bizim yeni, akıllı fonksiyonumuzu çağır
-          refreshing={isRefreshing} // Sadece bizim manuel yenileme durumumuza bak
-          contentContainerStyle={{ paddingTop: 10, paddingBottom: 10 }} // Üstte ve altta boşluk
-          ItemSeparatorComponent={ItemSeparator}
+          keyExtractor={(item) => item?.id || `unknown_${Math.random()}`}
+          renderItem={renderFavoriteItem}
+          ItemSeparatorComponent={renderSeparator}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
         />
       </View>
     </SafeAreaView>
@@ -96,29 +95,34 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  // YENİ STİL: Başlığın altındaki içeriği sarmalamak için
   contentContainer: {
     flex: 1,
   },
-  center: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  // Bu stil, yükleme ve hata durumunda içeriği ortalamak için kullanılabilir.
   centerContent: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 20,
   },
-  text: {
+  loadingText: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.subtitle,
+  },
+  errorText: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.subtitle,
+    textAlign: 'center',
+  },
+  emptyText: {
     color: Colors.textPrimary,
+    fontSize: FontSize.title,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    color: Colors.textSecondary,
     fontSize: FontSize.body,
     textAlign: 'center',
   },
-  subText: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.caption,
-    textAlign: 'center',
-    marginTop: 10,
-    paddingHorizontal: 20,
-  }
 });

@@ -1,33 +1,28 @@
 // app/(tabs)/crypto.tsx (DOĞRU VE NİHAİ LAYOUT)
 
-import React, { useCallback, useMemo, useState } from 'react'; // useCallback'i import et
-import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { AssetListItem, ItemSeparator } from '../../components/AssetListItem';
-import { AssetListItemSkeleton } from '../../components/AssetListItemSkeleton'; // Yeni bileşeni import et
-import { CustomHeader } from '../../components/CustomHeader'; // Header'ı burada import et
-import { ErrorState } from '../../components/ErrorState'; // Yeni bileşeni import et
+import React, { useMemo, useState } from 'react';
+import { FlatList, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { CustomHeader } from '../../components/CustomHeader';
+import { ItemSeparator, PariteListItem } from '../../components/PariteListItem';
 import { Colors, FontSize } from '../../constants/Theme';
-import { useCryptoData } from '../../hooks/useCryptoData';
+import { usePariteData } from '../../hooks/usePariteData';
+import { FinancialAsset } from '../../types';
 
 // YENİ VE GELİŞMİŞ SortType
 type SortType = 
   | 'default' 
   | 'name-asc' | 'name-desc' 
-  | 'price-asc' | 'price-desc' 
-  | 'change-asc' | 'change-desc';
+  | 'price-asc' | 'price-desc';
 
-export default function CryptoScreen() {
-  const { data: originalData, isLoading, isError, refetch } = useCryptoData();
+export default function PariteScreen() {
+  const { data: originalData = [], isLoading, isError, refetch } = usePariteData();
 
   // YENİ STATE'LER
   const [searchQuery, setSearchQuery] = useState('');
   const [sortType, setSortType] = useState<SortType>('default');
 
-  // YENİ KISIM: Sadece kullanıcının başlattığı yenilemeyi takip etmek için bir state
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
   // YENİ SIRALAMA MANTIĞI
-  const handleSortPress = (type: 'name' | 'price' | 'change') => {
+  const handleSortPress = (type: 'name' | 'price') => {
     const currentSort = sortType;
     const ascSort: SortType = `${type}-asc` as SortType;
     const descSort: SortType = `${type}-desc` as SortType;
@@ -39,15 +34,7 @@ export default function CryptoScreen() {
     }
   };
 
-  const handleRefresh = useCallback(async () => {
-    setIsRefreshing(true); // Manuel yenileme başladı
-    await refetch();      // Veriyi yeniden çek
-    setIsRefreshing(false); // Manuel yenileme bitti
-  }, [refetch]);
-
   const filteredAndSortedData = useMemo(() => {
-    if (!originalData) return [];
-
     // 1. Filtreleme
     const q = searchQuery.trim().toLowerCase();
     let filtered = originalData.filter(asset => {
@@ -62,10 +49,9 @@ export default function CryptoScreen() {
     switch (sortType) {
       case 'name-asc': filtered.sort((a, b) => a.name.localeCompare(b.name)); break;
       case 'name-desc': filtered.sort((a, b) => b.name.localeCompare(a.name)); break;
-      case 'price-asc': filtered.sort((a, b) => a.currentPrice - b.currentPrice); break;
-      case 'price-desc': filtered.sort((a, b) => b.currentPrice - a.currentPrice); break;
-      case 'change-asc': filtered.sort((a, b) => a.priceChangePercentage24h - b.priceChangePercentage24h); break;
-      case 'change-desc': filtered.sort((a, b) => b.priceChangePercentage24h - a.priceChangePercentage24h); break;
+      case 'price-asc': filtered.sort((a, b) => a.satis - b.satis); break;
+      case 'price-desc': filtered.sort((a, b) => b.satis - a.satis); break;
+      // Yeni API'de yüzdesel değişim yok, bu yüzden bu sıralamaları kaldırıyoruz
       default: break;
     }
 
@@ -78,7 +64,7 @@ export default function CryptoScreen() {
     return (
       <SafeAreaView style={styles.container}>
         {/* Kendi başlığımızı güvenli alanın içine koyuyoruz */}
-        <CustomHeader title="Kripto" />
+        <CustomHeader title="Parite" />
         
         {/* Arama çubuğunun da iskeletini gösterebiliriz veya direkt listeyi gösteririz */}
         <View style={styles.contentContainer}>
@@ -90,24 +76,33 @@ export default function CryptoScreen() {
               value=""
               editable={false}
             />
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sortContainer}>
+            <View style={styles.sortContainer}>
               {[...Array(4).keys()].map(i => (
                 <View key={i} style={[styles.sortButton, { opacity: 0.3 }]}>
                   <Text style={styles.sortButtonText}>...</Text>
                 </View>
               ))}
-            </ScrollView>
+            </View>
           </View>
           {/* 5 adet iskelet elemanı gösterelim */}
-          {[...Array(5).keys()].map(i => <AssetListItemSkeleton key={i} />)}
+          {[...Array(5).keys()].map(i => <PariteListItem key={i} asset={{} as FinancialAsset} index={i} />)}
         </View>
       </SafeAreaView>
     );
   }
 
   if (isError) {
-    // DEĞİŞİKLİK BURADA
-    return <ErrorState onRetry={refetch} />;
+    return (
+      <SafeAreaView style={styles.container}>
+        <CustomHeader title="Parite" />
+        <View style={styles.centerContent}>
+          <Text style={styles.errorText}>Veri yüklenirken hata oluştu.</Text>
+          <TouchableOpacity onPress={() => refetch()} style={styles.retryButton}>
+            <Text style={styles.retryButtonText}>Tekrar Dene</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -129,7 +124,7 @@ export default function CryptoScreen() {
           />
 
           {/* --- YENİ SIRALAMA BUTONLARI BÖLÜMÜ --- */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sortContainer}>
+          <View style={styles.sortContainer}>
             <TouchableOpacity
               style={[styles.sortButton, sortType === 'default' && styles.sortButtonActive]}
               onPress={() => setSortType('default')}
@@ -155,30 +150,18 @@ export default function CryptoScreen() {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.sortButton, (sortType === 'change-asc' || sortType === 'change-desc') && styles.sortButtonActive]}
-              onPress={() => handleSortPress('change')}
-            >
-              <Text style={[styles.sortButtonText, (sortType === 'change-asc' || sortType === 'change-desc') && styles.sortButtonTextActive]}>
-                Değişim {sortType === 'change-asc' ? '↑' : sortType === 'change-desc' ? '↓' : ''}
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
+
+          </View>
         </View>
 
         {/* --- LİSTE BÖLÜMÜNÜ GÜNCELLE --- */}
         <FlatList
           data={filteredAndSortedData}
-          renderItem={({ item, index }) => <AssetListItem asset={item} index={index} />}
           keyExtractor={(item) => item.id}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>Sonuç bulunamadı.</Text>
-          }
-          // DEĞİŞEN PROPLAR
-          onRefresh={handleRefresh} // Bizim yeni, akıllı fonksiyonumuzu çağır
-          refreshing={isRefreshing} // Sadece bizim manuel yenileme durumumuza bak
-          contentContainerStyle={{ paddingTop: 10, paddingBottom: 10 }} // Üstte ve altta boşluk
+          renderItem={({ item, index }) => <PariteListItem asset={item} index={index} />}
           ItemSeparatorComponent={ItemSeparator}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
         />
       </View>
     </SafeAreaView>
@@ -250,6 +233,24 @@ const styles = StyleSheet.create({
   },
   sortButtonTextActive: {
     color: Colors.textPrimary,
+    fontWeight: '600',
+  },
+  errorText: {
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 50,
+    fontSize: FontSize.subtitle,
+  },
+  retryButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  retryButtonText: {
+    color: Colors.textPrimary,
+    fontSize: FontSize.body,
     fontWeight: '600',
   },
 });

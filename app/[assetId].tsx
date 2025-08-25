@@ -1,27 +1,25 @@
 // app/[assetId].tsx (NİHAİ VE CİLALANMIŞ TASARIM)
 
 import { FontAwesome5 } from '@expo/vector-icons';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { SvgUri } from 'react-native-svg';
 
 import { NewsArticle } from '../api/marketApi';
-import { FinancialAsset } from '../types'; // <-- FinancialAsset tipi types klasöründen import ediliyor
-
+import { FakeHeader } from '../components/FakeHeader';
 import { Colors, FontSize } from '../constants/Theme';
 import { useCombinedMarketData } from '../hooks/useCombinedMarketData';
 import { useNewsData } from '../hooks/useNewsData';
+import { FinancialAsset } from '../types';
 
 // AssetListItem'dan aldığımız ve burada da kullanacağımız renderIcon fonksiyonu
 const renderIcon = (asset: FinancialAsset) => {
   const iconSize = 28;
   switch (asset.tip) {
-    case 'crypto':
-      return asset.image ? <Image source={{ uri: asset.image }} style={{ width: 32, height: 32 }} /> : null;
+    case 'parite':
     case 'doviz':
-      return asset.image ? <SvgUri width={32} height={32} uri={asset.image} /> : null;
-    case 'metal':
+      return asset.image ? <Image source={{ uri: asset.image }} style={{ width: 32, height: 32 }} /> : null;
+    case 'altin':
       switch (asset.symbol) {
         case 'XAU': return <FontAwesome5 name="coins" size={iconSize} color="#FFD700" />;
         case 'XAG': return <FontAwesome5 name="coins" size={iconSize} color="#C0C0C0" />;
@@ -50,7 +48,8 @@ export default function AssetDetailScreen() {
   const { data: allAssets, isLoading: isAssetsLoading } = useCombinedMarketData();
   const asset = allAssets.find(a => a.id === assetIdString);
 
-  const { data: newsData, isLoading: isNewsLoading } = useNewsData(asset?.name);
+  // DEĞİŞİKLİK: Hook'a artık tüm asset objesini gönderiyoruz
+  const { data: newsData, isLoading: isNewsLoading } = useNewsData(asset);
 
   // Dönüştürücü için daha gelişmiş state'ler
   const [fromValue, setFromValue] = useState('1');
@@ -61,10 +60,10 @@ export default function AssetDetailScreen() {
   useEffect(() => {
     if (asset) {
       if (isConvertingFromAsset) {
-        const result = (parseFloat(fromValue.replace(',', '.') || '0') * asset.currentPrice);
+        const result = (parseFloat(fromValue.replace(',', '.') || '0') * asset.satis);
         setToValue(result.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
       } else {
-        const result = (parseFloat(fromValue.replace(',', '.') || '0') / asset.currentPrice);
+        const result = (parseFloat(fromValue.replace(',', '.') || '0') / asset.satis);
         setToValue(result.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 6 }));
       }
     }
@@ -85,59 +84,62 @@ export default function AssetDetailScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
-      {/* SADECE DİNAMİK BAŞLIĞI AYARLIYORUZ */}
-      <Stack.Screen 
-        options={{ 
-          title: asset.symbol.toUpperCase(),
-        }} 
-      />
-      
-      <View style={styles.headerContainer}>
-        <View style={styles.titleRow}>
-          <View style={styles.iconContainer}>{renderIcon(asset)}</View>
-          <Text style={styles.assetName}>{asset.name}</Text>
+    <View style={{flex: 1, backgroundColor: Colors.background}}>
+      <FakeHeader title={asset.symbol.toUpperCase()} />
+      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+        <View style={styles.headerContainer}>
+          <View style={styles.titleRow}>
+            <View style={styles.iconContainer}>{renderIcon(asset)}</View>
+            <Text style={styles.assetName}>{asset.name}</Text>
+          </View>
+          <Text style={styles.price}>
+            ₺{asset.satis.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+          </Text>
         </View>
-        <Text style={styles.price}>
-          ₺{asset.currentPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
-        </Text>
-      </View>
 
-      <View style={styles.converterContainer}>
-        <View style={styles.converterRow}>
-          <Text style={styles.converterSymbol}>{isConvertingFromAsset ? asset.symbol : 'TRY'}</Text>
-          <TextInput
-            style={styles.converterInput}
-            value={isConvertingFromAsset ? fromValue : toValue}
-            onChangeText={handleFromChange}
-            keyboardType="numeric"
-            selectTextOnFocus
-          />
+        <View style={styles.converterContainer}>
+          <View style={styles.converterRow}>
+            <Text style={styles.converterSymbol}>{isConvertingFromAsset ? asset.symbol : 'TRY'}</Text>
+            <TextInput
+              style={styles.converterInput}
+              value={isConvertingFromAsset ? fromValue : toValue}
+              onChangeText={handleFromChange}
+              keyboardType="numeric"
+              selectTextOnFocus
+            />
+          </View>
+          <TouchableOpacity onPress={() => setIsConvertingFromAsset(!isConvertingFromAsset)} style={styles.converterIconContainer}>
+            <FontAwesome5 name="exchange-alt" size={20} color={Colors.textSecondary} style={styles.converterIcon} />
+          </TouchableOpacity>
+          <View style={styles.converterRow}>
+            <Text style={styles.converterSymbol}>{isConvertingFromAsset ? 'TRY' : asset.symbol}</Text>
+            <TextInput
+              style={styles.converterInput}
+              value={isConvertingFromAsset ? toValue : fromValue}
+              onChangeText={handleToChange}
+              keyboardType="numeric"
+              selectTextOnFocus
+            />
+          </View>
         </View>
-        <TouchableOpacity onPress={() => setIsConvertingFromAsset(!isConvertingFromAsset)} style={styles.converterIconContainer}>
-          <FontAwesome5 name="exchange-alt" size={20} color={Colors.textSecondary} style={styles.converterIcon} />
-        </TouchableOpacity>
-        <View style={styles.converterRow}>
-          <Text style={styles.converterSymbol}>{isConvertingFromAsset ? 'TRY' : asset.symbol}</Text>
-          <TextInput
-            style={styles.converterInput}
-            value={isConvertingFromAsset ? toValue : fromValue}
-            onChangeText={handleToChange}
-            keyboardType="numeric"
-            selectTextOnFocus
-          />
-        </View>
-      </View>
 
-      <Text style={styles.sectionTitle}>İlgili Haberler</Text>
-      {isNewsLoading ? (
-        <ActivityIndicator color={Colors.primary} style={{ marginTop: 20 }}/>
-      ) : (
-        <View>
-          {newsData?.slice(0, 5).map(item => <NewsCard key={item.url} item={item} />)}
-        </View>
-      )}
-    </ScrollView>
+        <Text style={styles.sectionTitle}>İlgili Haberler</Text>
+        {isNewsLoading ? (
+          <ActivityIndicator color={Colors.primary} style={{ marginTop: 20 }}/>
+        ) : (
+          // DEĞİŞİKLİK: newsData'nın boş olup olmadığını kontrol et
+          newsData && newsData.length > 0 ? (
+            <View>
+              {newsData.map(item => <NewsCard key={item.url} item={item} />)}
+            </View>
+          ) : (
+            <View style={styles.emptyNewsContainer}>
+              <Text style={styles.emptyNewsText}>Bu varlık için ilgili haber bulunamadı.</Text>
+            </View>
+          )
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
@@ -181,4 +183,17 @@ const styles = StyleSheet.create({
   newsCard: { backgroundColor: '#161b22', borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: Colors.border },
   newsSource: { color: Colors.textSecondary, fontSize: FontSize.caption, marginBottom: 6 },
   newsTitle: { color: Colors.textPrimary, fontSize: FontSize.body, fontWeight: '500', lineHeight: 22 },
+  emptyNewsContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#161b22',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  emptyNewsText: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.body,
+  },
 });

@@ -4,13 +4,15 @@
 export type ChartDataPoint = [number, number]; // [timestamp, price]
 
 export interface FinancialAsset {
-  id: string; // "bitcoin", "USD", "XAU" gibi eşsiz bir kod
-  name: string; // "Bitcoin", "Amerikan Doları"
-  symbol: string; // "BTC", "USD", "ALTIN"
-  image?: string; // İkon URL'si (opsiyonel)
-  currentPrice: number;
-  priceChangePercentage24h: number;
-  tip: 'crypto' | 'doviz' | 'metal';
+  id: string;
+  name: string;
+  symbol: string;
+  alis: number; // Alış fiyatı
+  satis: number; // Satış fiyatı (Bunu currentPrice olarak kullanacağız)
+  tip: 'doviz' | 'altin' | 'parite';
+  image?: string;
+  // Yüzdesel değişim API'de yok, bu yüzden opsiyonel yapalım
+  priceChangePercentage24h?: number; 
 }
 
 export interface Transaction {

@@ -1,28 +1,45 @@
 // hooks/useCombinedMarketData.ts
 
 import { FinancialAsset } from '../types';
-import { useCryptoData } from './useCryptoData';
 import { useCurrencyData } from './useCurrencyData';
-// DEĞİŞİKLİK BURADA: Dosya adını ve hook adını güncelliyoruz
 import { useGoldData } from './useGoldData';
+import { usePariteData } from './usePariteData';
 
 export const useCombinedMarketData = () => {
-  const { data: cryptoData = [], isLoading: isCryptoLoading, isError: isCryptoError, refetch: refetchCrypto, isFetching: isFetchingCrypto } = useCryptoData();
-  const { data: currencyData = [], isLoading: isCurrencyLoading, isError: isCurrencyError, refetch: refetchCurrency, isFetching: isFetchingCurrency } = useCurrencyData();
-  // DEĞİŞİKLİK BURADA: Hook'u doğru adıyla çağırıyoruz
-  const { data: metalData = [], isLoading: isMetalLoading, isError: isMetalError, refetch: refetchMetal, isFetching: isFetchingMetal } = useGoldData();
+  const { data: pariteData = [], isLoading: isPariteLoading, isError: isPariteError, refetch: refetchParite, isFetching: isFetchingParite } = usePariteData();
+  const { data: dovizData = [], isLoading: isDovizLoading, isError: isDovizError, refetch: refetchDoviz, isFetching: isFetchingDoviz } = useCurrencyData();
+  const { data: altinData = [], isLoading: isAltinLoading, isError: isAltinError, refetch: refetchAltin, isFetching: isFetchingAltin } = useGoldData();
 
-  const isLoading = isCryptoLoading || isCurrencyLoading || isMetalLoading;
-  const isError = isCryptoError || isCurrencyError || isMetalError;
-  const isFetching = isFetchingCrypto || isFetchingCurrency || isFetchingMetal;
+
+
+  const isLoading = isPariteLoading || isDovizLoading || isAltinLoading;
+  const isError = isPariteError || isDovizError || isAltinError;
+  const isFetching = isFetchingParite || isFetchingDoviz || isFetchingAltin;
 
   const refetch = () => {
-    refetchCrypto();
-    refetchCurrency();
-    refetchMetal();
+    refetchParite();
+    refetchDoviz();
+    refetchAltin();
   };
 
-  const data: FinancialAsset[] = [...cryptoData, ...currencyData, ...metalData];
+  // GÜVENLİK: Tüm verileri filtrele ve geçersiz olanları çıkar
+  const data: FinancialAsset[] = [...pariteData, ...dovizData, ...altinData].filter(asset => 
+    asset && 
+    asset.id && 
+    asset.name && 
+    // Altın için symbol boş olabilir, diğerleri için dolu olmalı
+    (asset.tip === 'altin' ? true : asset.symbol) &&
+    typeof asset.alis === 'number' && 
+    typeof asset.satis === 'number' &&
+    asset.tip &&
+    // image alanı için ek güvenlik: undefined olabilir ama geçersiz string olmamalı
+    (asset.image === undefined || 
+     (typeof asset.image === 'string' && 
+      asset.image.trim() !== '' && 
+      asset.image !== 'null' && 
+      asset.image !== 'undefined' &&
+      asset.image.startsWith('http')))
+  );
 
   return { data, isLoading, isError, refetch, isFetching };
 };
