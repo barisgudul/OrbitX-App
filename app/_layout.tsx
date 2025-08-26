@@ -28,7 +28,6 @@ export default function RootLayout() {
         {/* 1. EKRAN: SEKMELİ YAPI */}
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="[assetId]" />
-        <Stack.Screen name="addTransaction" />
         <Stack.Screen name="selectAsset" />
       </Stack>
     </QueryClientProvider>

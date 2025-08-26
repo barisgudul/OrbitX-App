@@ -178,35 +178,38 @@ export const fetchPariteData = async (): Promise<FinancialAsset[]> => {
 
 // Çevirici için tüm verileri çeken fonksiyon
 export const fetchConverterData = async (): Promise<FinancialAsset[]> => {
-   try {
+  try {
     const response = await axios.get(`${BASE_URL}/verileriGetir?tip=doviz_altin`);
-    // Bu endpoint'in tipi karışık olduğu için tip'i item'dan almayı deneyebiliriz
-    return response.data.map((item: any) => {
-      // GÜVENLİK: Her alanı tek tek doğrula
-      const image = item.image && 
-                    typeof item.image === 'string' && 
-                    item.image.trim() !== '' && 
-                    item.image !== 'null' && 
-                    item.image !== 'undefined' &&
-                    item.image.startsWith('http') 
-                    ? item.image 
-                    : undefined;
-      
-      return {
-          id: item.kod || item.ad || `unknown_${Date.now()}_${Math.random()}`,
-          name: item.yeni_ad || item.ad || 'Bilinmeyen Varlık',
-          symbol: item.kod || item.ad || 'UNK',
-          alis: parseFloat(item.alis) || 0,
-          satis: parseFloat(item.satis) || 0,
-          tip: item.tip || 'doviz', // API'nin verdiği tipi kullan, yoksa varsayılan
-          image: image, // Sadece geçerli URL'leri kabul et
-      };
-    });
+    
+    return response.data
+      // --- BURASI YENİ ---
+      .filter((item: any) => item.tip !== 'parite') // pariteleri direkt at
+      .map((item: any) => {
+        const image = item.image && 
+                      typeof item.image === 'string' && 
+                      item.image.trim() !== '' && 
+                      item.image !== 'null' && 
+                      item.image !== 'undefined' &&
+                      item.image.startsWith('http') 
+                      ? item.image 
+                      : undefined;
+        
+        return {
+            id: item.kod || item.ad || `unknown_${Date.now()}_${Math.random()}`,
+            name: item.yeni_ad || item.ad || 'Bilinmeyen Varlık',
+            symbol: item.kod || item.ad || 'UNK',
+            alis: parseFloat(item.alis) || 0,
+            satis: parseFloat(item.satis) || 0,
+            tip: item.tip || 'doviz',
+            image: image,
+        };
+      });
   } catch (error) {
     console.error("API Error fetching converter data:", error);
     throw new Error("Failed to fetch converter data");
   }
 };
+
 
 // Haber sistemi için basit bir yapı (opsiyonel)
 export interface NewsArticle {
