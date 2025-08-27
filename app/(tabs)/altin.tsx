@@ -1,14 +1,13 @@
-// app/(tabs)/altin.tsx (DOĞRU VE NİHAİ LAYOUT)
-import React, { useMemo, useState } from 'react'; // useCallback'i import et
+// app/(tabs)/altin.tsx 
+import React, { useMemo, useState } from 'react';
 import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { AltinListItem, ItemSeparator } from '../../components/AltinListItem';
-import { AssetListItemSkeleton } from '../../components/AssetListItemSkeleton'; // Yeni bileşeni import et
-import { CustomHeader } from '../../components/CustomHeader'; // Header'ı burada import et
-import { ErrorState } from '../../components/ErrorState'; // Yeni bileşeni import et
+import { AssetListItemSkeleton } from '../../components/AssetListItemSkeleton';
+import { CustomHeader } from '../../components/CustomHeader';
+import { ErrorState } from '../../components/ErrorState';
 import { Colors, FontSize } from '../../constants/Theme';
 import { useGoldData } from '../../hooks/useGoldData';
 
-// YENİ VE GELİŞMİŞ SortType
 type SortType = 
   | 'default' 
   | 'name-asc' | 'name-desc' 
@@ -20,16 +19,16 @@ export default function AltinScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortType, setSortType] = useState<SortType>('default');
 
-  // YENİ SIRALAMA MANTIĞI
+  
   const handleSortPress = (type: 'name' | 'price') => {
     const currentSort = sortType;
     const ascSort: SortType = `${type}-asc` as SortType;
     const descSort: SortType = `${type}-desc` as SortType;
     
     if (currentSort === ascSort) {
-      setSortType(descSort); // Eğer zaten artan sıralıysa, azalan yap
+      setSortType(descSort); 
     } else {
-      setSortType(ascSort); // Değilse, artan yap
+      setSortType(ascSort); 
     }
   };
 
@@ -43,7 +42,6 @@ export default function AltinScreen() {
       );
     });
 
-    // YENİ switch bloğu
     switch (sortType) {
       case 'name-asc': filtered.sort((a, b) => a.name.localeCompare(b.name)); break;
       case 'name-desc': filtered.sort((a, b) => b.name.localeCompare(a.name)); break;
@@ -55,15 +53,11 @@ export default function AltinScreen() {
     return filtered;
   }, [originalData, searchQuery, sortType]);
 
-  // DEĞİŞİKLİK BURADA:
-  // Sadece ilk yüklemede ve elimizde hiç veri yokken tam ekran yükleme göstergesi göster.
   if (isLoading && originalData.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
-        {/* Kendi başlığımızı güvenli alanın içine koyuyoruz */}
         <CustomHeader title="Altın" />
         
-        {/* Arama çubuğunun da iskeletini gösterebiliriz veya direkt listeyi gösteririz */}
         <View style={styles.contentContainer}>
           <View style={styles.controlsContainer}>
             <TextInput
@@ -81,7 +75,6 @@ export default function AltinScreen() {
               ))}
             </ScrollView>
           </View>
-          {/* 5 adet iskelet elemanı gösterelim */}
           {[...Array(5).keys()].map(i => <AssetListItemSkeleton key={i} />)}
         </View>
       </SafeAreaView>
@@ -89,16 +82,13 @@ export default function AltinScreen() {
   }
 
   if (isError) {
-    // DEĞİŞİKLİK BURADA
     return <ErrorState onRetry={refetch} />;
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Kendi başlığımızı güvenli alanın içine koyuyoruz */}
       <CustomHeader title="Altın" />
 
-      {/* Geri kalan her şey bir View içinde */}
       <View style={styles.contentContainer}>
         <View style={styles.controlsContainer}>
           <TextInput
@@ -155,11 +145,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  // YENİ STİL: Başlığın altındaki içeriği sarmalamak için
   contentContainer: {
     flex: 1,
   },
-  // Bu stil, yükleme ve hata durumunda içeriği ortalamak için kullanılabilir.
   centerContent: {
     justifyContent: 'center',
     alignItems: 'center',

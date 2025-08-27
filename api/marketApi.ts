@@ -2,6 +2,7 @@
 
 import axios from 'axios';
 import { FinancialAsset } from '../types';
+
 const BASE_URL = 'https://displaydata01.orbitbulut.com/eyyupoglu_altin_v1';
 
 // Döviz isimlerini temizlemek için küçük bir yardımcı

@@ -7,13 +7,14 @@ interface ConverterState {
   fromAsset: FinancialAsset | null;
   toAsset: FinancialAsset | null;
   fromAmount: string;
-  toAmount: string;
+  // İki ayrı sonuç için state'i genişletiyoruz
+  toAmountAlis: string;
+  toAmountSatis: string;
   // Fonksiyonlar
   setFromAsset: (asset: FinancialAsset) => void;
   setToAsset: (asset: FinancialAsset) => void;
   setFromAmount: (amount: string) => void;
-  swapAssets: () => void;
-  // Hesaplama için state'leri güncelle
+  setQuickAmount: (amount: number) => void;
   calculateToAmount: () => void;
 }
 
@@ -21,52 +22,53 @@ export const useConverterStore = create<ConverterState>((set, get) => ({
   fromAsset: null,
   toAsset: null,
   fromAmount: '1',
-  toAmount: '',
+  toAmountAlis: '', // Alış sonucu
+  toAmountSatis: '', // Satış sonucu
 
   setFromAsset: (asset) => {
     set({ fromAsset: asset });
-    get().calculateToAmount(); // Varlık değişince yeniden hesapla
+    get().calculateToAmount();
   },
 
   setToAsset: (asset) => {
     set({ toAsset: asset });
-    get().calculateToAmount(); // Varlık değişince yeniden hesapla
+    get().calculateToAmount();
   },
 
-  setFromAmount: (amount) => {
+  setFromAmount: (amount: string) => {
     set({ fromAmount: amount });
-    get().calculateToAmount(); // Miktar değişince yeniden hesapla
+    get().calculateToAmount();
   },
 
-  swapAssets: () => {
-    const { fromAsset, toAsset, toAmount } = get(); // <-- fromAmount'ı SİLDİK.
-    if (fromAsset && toAsset) {
-      set({
-        fromAsset: toAsset,
-        toAsset: fromAsset,
-        fromAmount: toAmount || '1', // Yer değiştirirken, eski "toAmount" yeni "fromAmount" olacak.
-      });
-      get().calculateToAmount();
-    }
+  // YENİ FONKSİYON: Hızlı miktar ayarlamak için
+  setQuickAmount: (amount: number) => {
+    // Rakamı string'e çevir, çünkü input'umuz string bekliyor.
+    set({ fromAmount: amount.toString() }); 
+    get().calculateToAmount(); // Ve hemen yeniden hesapla
   },
 
+  // ARTIK HEM ALIŞ HEM SATIŞ HESAPLANIYOR
   calculateToAmount: () => {
-    const { fromAsset, toAsset, fromAmount } = get();
-    if (!fromAsset || !toAsset || fromAmount === '') {
-      set({ toAmount: '' });
+    const { fromAsset, fromAmount } = get();
+    // toAsset'e gerek kalmadı çünkü her zaman TRY (veya değeri 1) olacak
+    if (!fromAsset || fromAmount === '') {
+      set({ toAmountAlis: '', toAmountSatis: '' });
       return;
     }
 
     const amount = parseFloat(fromAmount.replace(',', '.')) || 0;
     if (amount === 0) {
-      set({ toAmount: '0' });
+      set({ toAmountAlis: '0', toAmountSatis: '0' });
       return;
     }
 
-    // Hesaplama mantığı: Her zaman TRY üzerinden çapraz kur yap.
-    // (Miktar * Başlangıç Varlığının TRY Satış Fiyatı) / Hedef Varlığın TRY Satış Fiyatı
-    const result = (amount * fromAsset.satis) / toAsset.satis;
+    // Alış ve Satış değerlerini ayrı ayrı hesapla
+    const alisResult = amount * fromAsset.alis;
+    const satisResult = amount * fromAsset.satis;
 
-    set({ toAmount: result.toLocaleString('tr-TR', { maximumFractionDigits: 6 }) });
+    set({ 
+      toAmountAlis: alisResult.toLocaleString('tr-TR', { maximumFractionDigits: 2, minimumFractionDigits: 2 }),
+      toAmountSatis: satisResult.toLocaleString('tr-TR', { maximumFractionDigits: 2, minimumFractionDigits: 2 })
+    });
   },
 }));

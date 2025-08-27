@@ -24,19 +24,22 @@ export const FakeHeader: React.FC<FakeHeaderProps> = ({ title }) => {
 
 const styles = StyleSheet.create({
   container: { 
-    height: 60, 
+    height: 80, // 60'tan 80'e çıkardım - daha rahat erişim için
     flexDirection: 'row', 
     alignItems: 'center', 
     justifyContent: 'space-between', 
     paddingHorizontal: 16, 
+    paddingTop: 20, // Üstten padding ekledim
     backgroundColor: Colors.background,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
   backButton: { 
-    padding: 8,
+    padding: 12, // 8'den 12'ye çıkardım - daha büyük dokunma alanı
     borderRadius: 20,
     backgroundColor: Colors.card,
+    borderWidth: 1, // Sınır ekledim
+    borderColor: Colors.border,
   },
   title: { 
     color: Colors.textPrimary, 

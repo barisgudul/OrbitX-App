@@ -1,10 +1,9 @@
-// components/DovizListItem.tsx (SANATSAL ARKA PLANLI TASARIM)
+// components/DovizListItem.tsx (İNCE AYARLI TASARIM)
 
 import { FontAwesome } from '@expo/vector-icons';
-import { Link } from 'expo-router';
 import { MotiView } from 'moti';
 import React from 'react';
-import { ImageBackground, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../constants/Theme';
 import { useFavoritesStore } from '../store/favoritesStore';
 import { FinancialAsset } from '../types';
@@ -20,8 +19,7 @@ const DovizListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) 
   const isAssetFavorite = isFavorite(asset.id);
 
   const content = (pressed: boolean) => (
-    <ImageBackground
-      source={{ uri: asset.image }}
+    <ImageBackground source={{ uri: asset.image }}
       style={[styles.container, { backgroundColor: pressed ? '#101010' : 'transparent' }]}
       imageStyle={styles.backgroundImageStyle}
       resizeMode="cover"
@@ -35,20 +33,18 @@ const DovizListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) 
           <View style={styles.priceContainer}>
             <Text style={styles.priceLabel}>Alış</Text>
             <Text style={styles.priceValue}>
-              {asset.tip !== 'parite' && '₺'}
-              {asset.alis.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ₺{asset.alis.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Text>
           </View>
           <View style={styles.priceContainer}>
             <Text style={styles.priceLabel}>Satış</Text>
             <Text style={styles.priceValue}>
-              {asset.tip !== 'parite' && '₺'}
-              {asset.satis.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ₺{asset.satis.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Text>
           </View>
-          <TouchableOpacity onPress={async (e) => { 
-            e.preventDefault(); 
-            await toggleFavorite(asset.id); 
+          <TouchableOpacity onPress={(e) => {
+            e.preventDefault();
+            toggleFavorite(asset.id);
           }} style={styles.starContainer}>
             <FontAwesome name={isAssetFavorite ? 'star' : 'star-o'} size={22} color={isAssetFavorite ? '#FFD700' : Colors.textSecondary} />
           </TouchableOpacity>
@@ -58,14 +54,14 @@ const DovizListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) 
   );
 
   return (
-    <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 300, delay: index * 50 }}>
-      {onPress ? (
-        <TouchableOpacity onPress={onPress}>{content(false)}</TouchableOpacity>
-      ) : (
-        <Link href={`/${asset.id}`} asChild>
-          <Pressable>{({ pressed }) => content(pressed)}</Pressable>
-        </Link>
-      )}
+    <MotiView
+      from={{ opacity: 0, translateY: 20 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: 'timing', duration: 300, delay: index * 50 }}
+    >
+      <TouchableOpacity onPress={onPress}>
+        {content(false)}
+      </TouchableOpacity>
     </MotiView>
   );
 };
@@ -81,7 +77,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.08)'
   },
   backgroundImageStyle: {
-    opacity: 0.15  // Eski opaklık - döviz ekranı için
+    opacity: 0.4
   },
   overlay: {
     flex: 1,
@@ -89,9 +85,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(0,0,0,0.4)'
+    backgroundColor: 'rgba(0,0,0,0.5)'
   },
   nameContainer: {
+    flex: 1, // Mevcut alanın tamamını kaplamaya çalış
+    marginRight: 8, // Sağdaki fiyat bölümüyle arasına boşluk koy
     justifyContent: 'center',
   },
   name: {
@@ -113,6 +111,7 @@ const styles = StyleSheet.create({
   priceSection: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 0, // Bu bölümün küçülmesini engelle ki fiyatlar bozulmasın
   },
   priceContainer: {
     alignItems: 'flex-end',
@@ -135,7 +134,10 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     padding: 8,
   },
-  separator: { height: 1, backgroundColor: Colors.border },
+  separator: {
+    height: 1,
+    backgroundColor: Colors.border
+  },
 });
 
 const ItemSeparator = () => <View style={styles.separator} />;

@@ -1,10 +1,9 @@
 // components/AssetListItem.tsx (YENİ KART TASARIMI)
 
 import { FontAwesome } from '@expo/vector-icons';
-import { Link } from 'expo-router';
 import { MotiView } from 'moti';
 import React from 'react';
-import { Image, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../constants/Theme';
 import { useFavoritesStore } from '../store/favoritesStore';
 import { FinancialAsset } from '../types';
@@ -27,30 +26,29 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) 
   };
 
   const content = (pressed: boolean) => (
-    <View style={[styles.card, { backgroundColor: pressed ? '#1C1C1E' : '#161b22' }]}>
-      {/* Sol Bölüm: İkon ve İsim */}
+    <View style={[styles.card, { backgroundColor: pressed ? '#101010' : Colors.card }]}>
       <View style={styles.leftContainer}>
         <View style={styles.iconContainer}>{renderIcon(asset)}</View>
         <View style={styles.nameContainer}>
           <Text style={styles.name}>{asset.name}</Text>
-          {/* DEĞİŞİKLİK: Sadece symbol alanı doluysa bu satırı göster */}
-          {asset.symbol ? <Text style={styles.symbol}>{asset.symbol}</Text> : null}
+          <Text style={styles.symbol}>{asset.symbol}</Text>
         </View>
       </View>
-
-      {/* Sağ Bölüm: Fiyatlar ve Favori */}
       <View style={styles.rightContainer}>
         <View style={styles.priceContainer}>
-          {/* DEĞİŞİKLİK: 'satisPrice' stilini ve 'Satış' etiketini ekliyoruz */}
           <Text style={styles.satisPrice}>
-            Satış: {asset.tip !== 'parite' && '₺'}
-            {asset.satis.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </Text>
-          <Text style={styles.alisPrice}>
-            Alış: {asset.tip !== 'parite' && '₺'}{asset.alis.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+            ₺{asset.satis.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </Text>
         </View>
-        <TouchableOpacity onPress={(e) => { e.preventDefault(); toggleFavorite(asset.id); }} style={styles.starContainer}>
+        <View style={styles.priceContainer}>
+          <Text style={styles.alisPrice}>
+            ₺{asset.alis.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </Text>
+        </View>
+        <TouchableOpacity onPress={(e) => {
+          e.preventDefault();
+          toggleFavorite(asset.id);
+        }} style={styles.starContainer}>
           <FontAwesome name={isAssetFavorite ? 'star' : 'star-o'} size={22} color={isAssetFavorite ? '#FFD700' : Colors.textSecondary} />
         </TouchableOpacity>
       </View>
@@ -58,14 +56,14 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) 
   );
 
   return (
-    <MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: 'timing', duration: 300, delay: index * 50 }}>
-      {onPress ? (
-        <TouchableOpacity onPress={onPress}>{content(false)}</TouchableOpacity>
-      ) : (
-        <Link href={`/${asset.id}`} asChild>
-          <Pressable>{({ pressed }) => content(pressed)}</Pressable>
-        </Link>
-      )}
+    <MotiView
+      from={{ opacity: 0, translateY: 20 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: 'timing', duration: 300, delay: index * 50 }}
+    >
+      <TouchableOpacity onPress={onPress}>
+        {content(false)}
+      </TouchableOpacity>
     </MotiView>
   );
 };
@@ -77,63 +75,74 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 16,
     marginVertical: 6,
-    padding: 16,
+    paddingVertical: 12, // Dikey padding'i biraz azaltalım
+    paddingHorizontal: 16,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
+  
   leftContainer: {
+    flex: 1, 
     flexDirection: 'row',
     alignItems: 'center',
-    flexShrink: 1, // Uzun isimlerin sığmasını sağla
+    marginRight: 8,
+    overflow: 'hidden',
   },
   iconContainer: {
-    width: 42,
-    height: 42,
+    width: 40, // İkonu biraz küçültelim
+    height: 40,
     marginRight: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
   image: { 
-    width: 42, 
-    height: 42 
+    width: 40, // İkonu biraz küçültelim
+    height: 40 
   },
   nameContainer: {
+    flex: 1,
     justifyContent: 'center',
   },
+
+  // DEĞİŞİKLİK BURADA
   name: {
     color: Colors.textPrimary,
-    fontSize: 16,
+    fontSize: 15, // Yazı boyutunu 16'dan 15'e çektik
     fontWeight: '600',
   },
   symbol: {
     color: Colors.textSecondary,
-    fontSize: 13,
+    fontSize: 12, // Bunu da 13'ten 12'ye çektik
     paddingTop: 4,
   },
   rightContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 0,
   },
   priceContainer: {
     alignItems: 'flex-end',
   },
   satisPrice: {
     color: Colors.textPrimary,
-    fontSize: 16,
+    fontSize: 15, // Satış fiyatını 16'dan 15'e çektik
     fontWeight: '600',
   },
   alisPrice: {
     color: Colors.textSecondary,
-    fontSize: 13,
+    fontSize: 12, // Alış fiyatını 13'ten 12'ye çektik
     paddingTop: 4,
   },
+  // DEĞİŞİKLİK BİTTİ
+  
   starContainer: {
-    paddingLeft: 16,
+    paddingLeft: 12, // Yıldızla arasını biraz daralttık
     padding: 8,
   },
   separator: { height: 1, backgroundColor: Colors.border },
 });
 
 const ItemSeparator = () => <View style={styles.separator} />;
+
 export { AssetListItem, ItemSeparator };
