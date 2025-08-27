@@ -5,12 +5,18 @@ import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-import { NewsArticle } from '../api/marketApi';
 import { FakeHeader } from '../components/FakeHeader';
 import { Colors, FontSize } from '../constants/Theme';
-import { useCombinedMarketData } from '../hooks/useCombinedMarketData';
-import { useNewsData } from '../hooks/useNewsData';
+import { useConverterData } from '../hooks/useConverterData';
 import { FinancialAsset } from '../types';
+
+// NewsArticle interface tanımı
+interface NewsArticle {
+  title: string;
+  url: string;
+  source: string;
+  publishedAt: string;
+}
 
 // AssetListItem'dan aldığımız ve burada da kullanacağımız renderIcon fonksiyonu
 const renderIcon = (asset: FinancialAsset) => {
@@ -45,11 +51,12 @@ export default function AssetDetailScreen() {
   const { assetId } = useLocalSearchParams();
   const assetIdString = Array.isArray(assetId) ? assetId[0] : assetId;
 
-  const { data: allAssets, isLoading: isAssetsLoading } = useCombinedMarketData();
-  const asset = allAssets.find(a => a.id === assetIdString);
+  const { data: allAssets, isLoading: isAssetsLoading } = useConverterData();
+  const asset = allAssets?.find(a => a.id === assetIdString);
 
-  // DEĞİŞİKLİK: Hook'a artık tüm asset objesini gönderiyoruz
-  const { data: newsData, isLoading: isNewsLoading } = useNewsData(asset);
+  // News functionality removed - using empty data for now
+  const newsData: NewsArticle[] = [];
+  const isNewsLoading = false;
 
   // Dönüştürücü için daha gelişmiş state'ler
   const [fromValue, setFromValue] = useState('1');
@@ -130,7 +137,7 @@ export default function AssetDetailScreen() {
           // DEĞİŞİKLİK: newsData'nın boş olup olmadığını kontrol et
           newsData && newsData.length > 0 ? (
             <View>
-              {newsData.map(item => <NewsCard key={item.url} item={item} />)}
+              {newsData.map((item: NewsArticle) => <NewsCard key={item.url} item={item} />)}
             </View>
           ) : (
             <View style={styles.emptyNewsContainer}>

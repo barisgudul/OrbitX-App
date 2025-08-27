@@ -1,12 +1,12 @@
-// app/(tabs)/index.tsx (DOĞRU VE NİHAİ LAYOUT)
+// app/(tabs)/index.tsx 
 import React, { useMemo, useState } from 'react'; // useCallback'i import et
 import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { AssetListItemSkeleton } from '../../components/AssetListItemSkeleton';
 import { CustomHeader } from '../../components/CustomHeader'; // Header'ı burada import et
 import { DovizListItem, ItemSeparator } from '../../components/DovizListItem';
 import { ErrorState } from '../../components/ErrorState'; // Yeni bileşeni import et
 import { Colors, FontSize } from '../../constants/Theme';
 import { useCurrencyData } from '../../hooks/useCurrencyData';
-import { FinancialAsset } from '../../types';
 
 // YENİ VE GELİŞMİŞ SortType
 type SortType = 
@@ -16,6 +16,8 @@ type SortType =
 
 export default function DovizScreen() {
   const { data: originalData = [], isLoading, isError, refetch } = useCurrencyData();
+
+  
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortType, setSortType] = useState<SortType>('default');
@@ -57,7 +59,7 @@ export default function DovizScreen() {
 
   // DEĞİŞİKLİK BURADA:
   // Sadece ilk yüklemede ve elimizde hiç veri yokken tam ekran yükleme göstergesi göster.
-  if (isLoading && !originalData) {
+  if (isLoading && originalData.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
         {/* Kendi başlığımızı güvenli alanın içine koyuyoruz */}
@@ -82,7 +84,7 @@ export default function DovizScreen() {
             </ScrollView>
           </View>
           {/* 5 adet iskelet elemanı gösterelim */}
-          {[...Array(5).keys()].map(i => <DovizListItem key={i} asset={{} as FinancialAsset} index={i} />)}
+          {[...Array(5).keys()].map(i => <AssetListItemSkeleton key={i} />)}
         </View>
       </SafeAreaView>
     );
@@ -96,6 +98,8 @@ export default function DovizScreen() {
   return (
     // En dışı SafeAreaView ile sarmalıyoruz
     <SafeAreaView style={styles.container}>
+      
+      
       {/* Kendi başlığımızı güvenli alanın içine koyuyoruz */}
       <CustomHeader title="Döviz" />
 

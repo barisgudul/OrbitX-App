@@ -15,7 +15,7 @@ export default function FavorilerScreen() {
   const { data: allAssets = [], isLoading, isError } = useCombinedMarketData();
   const { favorites } = useFavoritesStore();
 
-  const favoriteAssets = allAssets.filter(asset => favorites.includes(asset.id));
+  const favoriteAssets = allAssets.filter((asset: FinancialAsset) => favorites.includes(asset.id));
 
   const renderFavoriteItem = ({ item, index }: { item: FinancialAsset; index: number }) => {
     // Güvenlik kontrolü ekle

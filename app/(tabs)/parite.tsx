@@ -1,12 +1,12 @@
-// app/(tabs)/crypto.tsx (DOĞRU VE NİHAİ LAYOUT)
+// app/(tabs)/parite.tsx (DOĞRU VE NİHAİ LAYOUT)
 
 import React, { useMemo, useState } from 'react';
 import { FlatList, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { AssetListItemSkeleton } from '../../components/AssetListItemSkeleton';
 import { CustomHeader } from '../../components/CustomHeader';
 import { ItemSeparator, PariteListItem } from '../../components/PariteListItem';
 import { Colors, FontSize } from '../../constants/Theme';
 import { usePariteData } from '../../hooks/usePariteData';
-import { FinancialAsset } from '../../types';
 
 // YENİ VE GELİŞMİŞ SortType
 type SortType = 
@@ -60,7 +60,7 @@ export default function PariteScreen() {
 
   // DEĞİŞİKLİK BURADA:
   // Sadece ilk yüklemede ve elimizde hiç veri yokken tam ekran yükleme göstergesi göster.
-  if (isLoading && !originalData) {
+  if (isLoading && originalData.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
         {/* Kendi başlığımızı güvenli alanın içine koyuyoruz */}
@@ -85,7 +85,7 @@ export default function PariteScreen() {
             </View>
           </View>
           {/* 5 adet iskelet elemanı gösterelim */}
-          {[...Array(5).keys()].map(i => <PariteListItem key={i} asset={{} as FinancialAsset} index={i} />)}
+          {[...Array(5).keys()].map(i => <AssetListItemSkeleton key={i} />)}
         </View>
       </SafeAreaView>
     );
@@ -109,7 +109,7 @@ export default function PariteScreen() {
     // En dışı SafeAreaView ile sarmalıyoruz
     <SafeAreaView style={styles.container}>
       {/* Kendi başlığımızı güvenli alanın içine koyuyoruz */}
-      <CustomHeader title="Kripto" />
+      <CustomHeader title="Parite" />
 
       {/* Geri kalan her şey bir View içinde */}
       <View style={styles.contentContainer}>

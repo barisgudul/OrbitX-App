@@ -5,16 +5,19 @@ import { FlatList, SafeAreaView, StyleSheet, TextInput, View } from 'react-nativ
 import { AssetListItem, ItemSeparator } from '../components/AssetListItem'; // Ana bileşenimizi import ediyoruz
 import { FakeHeader } from '../components/FakeHeader';
 import { Colors, FontSize } from '../constants/Theme';
-import { useCombinedMarketData } from '../hooks/useCombinedMarketData';
+import { useConverterData } from '../hooks/useConverterData';
+import { useConverterStore } from '../store/converterStore'; // BU YENİ IMPORT
 
 export default function SelectAssetScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { data: allAssets } = useCombinedMarketData();
+  const { data: allAssets } = useConverterData(); // Çevirici için sadece doviz ve altin verileri
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // Hangi varlık seçim butonuna tıklandığını al
-  const target = params.target as string;
+
+  // Store'dan fonksiyonları al
+  const { setFromAsset, setToAsset } = useConverterStore();
+
+  const target = params.target as 'from' | 'to';
 
   const filteredAssets = useMemo(() => {
     if (!allAssets) return [];
@@ -56,8 +59,14 @@ export default function SelectAssetScreen() {
             asset={item}
             index={index}
             onPress={() => {
-              // Çevirici sayfasına yönlendir ve seçilen varlığı parametre olarak gönder
-              router.push(`/cevirici?selectedAsset=${encodeURIComponent(JSON.stringify(item))}&target=${target}`);
+              // Hangi kutucuk hedeflendiyse, onun state'ini güncelle
+              if (target === 'from') {
+                setFromAsset(item);
+              } else {
+                setToAsset(item);
+              }
+              // Çevirici ekranına geri dön
+              router.back();
             }}
           />
         )}

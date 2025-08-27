@@ -57,7 +57,7 @@ export default function AltinScreen() {
 
   // DEĞİŞİKLİK BURADA:
   // Sadece ilk yüklemede ve elimizde hiç veri yokken tam ekran yükleme göstergesi göster.
-  if (isLoading && !originalData) {
+  if (isLoading && originalData.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
         {/* Kendi başlığımızı güvenli alanın içine koyuyoruz */}
