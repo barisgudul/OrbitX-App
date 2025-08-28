@@ -4,7 +4,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { MotiView } from 'moti';
 import React from 'react';
 import { Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Colors } from '../constants/Theme';
+import { useThemeColors } from '../hooks/useTheme';
 import { useFavoritesStore } from '../store/favoritesStore';
 import { FinancialAsset } from '../types';
 
@@ -16,6 +16,7 @@ interface AssetListItemProps {
 
 const AltinListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) => {
   const { toggleFavorite, isFavorite } = useFavoritesStore();
+  const colors = useThemeColors();
   const isAssetFavorite = isFavorite(asset.id);
 
   const getBackgroundImage = (asset: FinancialAsset) => {
@@ -35,7 +36,7 @@ const AltinListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) 
     if (asset.image) {
       return <Image source={{ uri: asset.image }} style={styles.image} resizeMode="contain" />;
     }
-    return <FontAwesome name="database" size={28} color={Colors.textSecondary} />;
+    return <FontAwesome name="database" size={28} color={colors.textSecondary} />;
   };
 
   const content = (pressed: boolean) => (
@@ -44,19 +45,19 @@ const AltinListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) 
       imageStyle={styles.backgroundImageStyle}
       resizeMode="cover"
     >
-      <View style={styles.overlay}>
+      <View style={[styles.overlay, { backgroundColor: colors.imageOverlay }]}>
         <View style={styles.leftContainer}>
           <View style={styles.iconContainer}>{renderIcon(asset)}</View>
           <View style={styles.nameContainer}>
-            <Text style={styles.name}>{asset.name}</Text>
+            <Text style={[styles.name, { color: colors.textPrimary }]}>{asset.name}</Text>
           </View>
         </View>
         <View style={styles.rightContainer}>
           <View style={styles.priceContainer}>
-            <Text style={styles.satisPrice}>
+            <Text style={[styles.satisPrice, { color: colors.textPrimary }]}>
               Satış: ₺{asset.satis.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Text>
-            <Text style={styles.alisPrice}>
+            <Text style={[styles.alisPrice, { color: colors.textSecondary }]}>
               Alış: ₺{asset.alis.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
             </Text>
           </View>
@@ -64,7 +65,7 @@ const AltinListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) 
             e.preventDefault();
             toggleFavorite(asset.id);
           }} style={styles.starContainer}>
-            <FontAwesome name={isAssetFavorite ? 'star' : 'star-o'} size={22} color={isAssetFavorite ? '#FFD700' : Colors.textPrimary} />
+            <FontAwesome name={isAssetFavorite ? 'star' : 'star-o'} size={22} color={isAssetFavorite ? '#FFD700' : colors.textPrimary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -137,7 +138,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   name: {
-    color: Colors.textPrimary,
     fontSize: 18,
     fontWeight: 'bold',
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
@@ -151,7 +151,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end'
   },
   satisPrice: {
-    color: Colors.textPrimary,
     fontSize: 16,
     fontWeight: '600',
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
@@ -172,10 +171,12 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: Colors.border
   }
 });
 
-const ItemSeparator = () => <View style={styles.separator} />;
+const ItemSeparator = () => {
+  const colors = useThemeColors();
+  return <View style={[styles.separator, { backgroundColor: colors.border }]} />;
+};
 
 export { AltinListItem, ItemSeparator };

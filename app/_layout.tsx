@@ -1,8 +1,9 @@
-// app/_layout.tsx (NİHAİ VE DOĞRU NAVİGASYON YAPISI)
+// app/_layout.tsx 
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFavoritesStore } from '../store/favoritesStore';
 
 
@@ -16,18 +17,20 @@ export default function RootLayout() {
   }, [loadFavorites]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Stack
-        // DEĞİŞİKLİK BURADA: TÜM BAŞLIKLARI KAPAT
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        {/* 1. EKRAN: SEKMELİ YAPI */}
-        <Stack.Screen name="(tabs)" />
-        {/* Asset detay sayfası kaldırıldı */}
-        <Stack.Screen name="selectAsset" />
-      </Stack>
-    </QueryClientProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryClientProvider client={queryClient}>
+        <Stack
+          // DEĞİŞİKLİK BURADA: TÜM BAŞLIKLARI KAPAT
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          {/* 1. EKRAN: SEKMELİ YAPI */}
+          <Stack.Screen name="(tabs)" />
+          {/* Asset detay sayfası kaldırıldı */}
+          <Stack.Screen name="selectAsset" />
+        </Stack>
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }

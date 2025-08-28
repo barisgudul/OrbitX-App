@@ -4,8 +4,9 @@ import React, { useMemo, useState } from 'react';
 import { FlatList, SafeAreaView, StyleSheet, TextInput, View } from 'react-native';
 import { AssetListItem, ItemSeparator } from '../components/AssetListItem'; // Ana bileşenimizi import ediyoruz
 import { FakeHeader } from '../components/FakeHeader';
-import { Colors, FontSize } from '../constants/Theme';
+import { FontSize } from '../constants/Theme';
 import { useConverterData } from '../hooks/useConverterData';
+import { useThemeColors } from '../hooks/useTheme';
 import { useConverterStore } from '../store/converterStore'; // BU YENİ IMPORT
 
 export default function SelectAssetScreen() {
@@ -13,6 +14,7 @@ export default function SelectAssetScreen() {
   const params = useLocalSearchParams();
   const { data: allAssets } = useConverterData(); // Çevirici için sadece doviz ve altin verileri
   const [searchQuery, setSearchQuery] = useState('');
+  const colors = useThemeColors();
 
   // Store'dan fonksiyonları al
   const { setFromAsset, setToAsset } = useConverterStore();
@@ -36,15 +38,19 @@ export default function SelectAssetScreen() {
 
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       
       <FakeHeader title="Varlık Seçin" />
 
       <View style={styles.searchContainer}>
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { 
+            backgroundColor: colors.card, 
+            color: colors.textPrimary, 
+            borderColor: colors.border 
+          }]}
           placeholder="Varlık Ara..."
-          placeholderTextColor={Colors.textSecondary}
+          placeholderTextColor={colors.textSecondary}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -79,7 +85,6 @@ export default function SelectAssetScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -88,7 +93,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
   },
   backButton: {
     width: 36,
@@ -101,11 +105,9 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FontSize.title,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
   },
   cancelText: {
     fontSize: FontSize.body,
-    color: Colors.primary,
     fontWeight: '500',
   },
   searchContainer: {
@@ -113,14 +115,9 @@ const styles = StyleSheet.create({
     paddingTop: 24, // Header'dan sonra minimal boşluk
   },
   searchInput: {
-    backgroundColor: Colors.card,
     borderRadius: 12,
     padding: 16,
     fontSize: FontSize.body,
-    color: Colors.textPrimary,
     borderWidth: 1,
-    borderColor: Colors.border,
   },
-
-
 });

@@ -2,7 +2,8 @@
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Colors, FontSize } from '../constants/Theme';
+import { FontSize } from '../constants/Theme';
+import { useThemeColors } from '../hooks/useTheme';
 import { FinancialAsset } from '../types';
 
 interface SelectableAssetItemProps {
@@ -11,6 +12,8 @@ interface SelectableAssetItemProps {
 }
 
 export const SelectableAssetItem: React.FC<SelectableAssetItemProps> = ({ asset, onPress }) => {
+  const colors = useThemeColors();
+  
   const renderIcon = (asset: FinancialAsset) => {
     const iconSize = 32;
     switch (asset.tip) {
@@ -34,7 +37,7 @@ export const SelectableAssetItem: React.FC<SelectableAssetItemProps> = ({ asset,
           case 'PA':
             return <MaterialCommunityIcons name="cube-outline" size={iconSize} color="#CED0DD" />;
           default:
-            return <FontAwesome5 name="database" size={iconSize} color={Colors.textSecondary} />;
+            return <FontAwesome5 name="database" size={iconSize} color={colors.textSecondary} />;
         }
       default:
         return null;
@@ -43,22 +46,22 @@ export const SelectableAssetItem: React.FC<SelectableAssetItemProps> = ({ asset,
 
   return (
     <TouchableOpacity onPress={onPress}>
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.leftContainer}>
-          <View style={styles.iconContainer}>{renderIcon(asset)}</View>
+          <View style={[styles.iconContainer, { backgroundColor: colors.card }]}>{renderIcon(asset)}</View>
           <View style={styles.nameContainer}>
-            <Text style={styles.name}>{asset.symbol}</Text>
-            <Text style={styles.symbol}>{asset.name}</Text>
+            <Text style={[styles.name, { color: colors.textPrimary }]}>{asset.symbol}</Text>
+            <Text style={[styles.symbol, { color: colors.textSecondary }]}>{asset.name}</Text>
           </View>
         </View>
         <View style={styles.priceContainer}>
-          <Text style={styles.price}>
+          <Text style={[styles.price, { color: colors.textPrimary }]}>
             ₺{asset.satis.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
           </Text>
           {asset.priceChangePercentage24h && (
             <Text style={[
               styles.change,
-              { color: asset.priceChangePercentage24h >= 0 ? Colors.accentGreen : Colors.accentRed }
+              { color: asset.priceChangePercentage24h >= 0 ? colors.accentGreen : colors.accentRed }
             ]}>
               {asset.priceChangePercentage24h >= 0 ? '+' : ''}{asset.priceChangePercentage24h.toFixed(2)}%
             </Text>
@@ -76,7 +79,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: Colors.background,
   },
   leftContainer: {
     flexDirection: 'row',
@@ -87,7 +89,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: Colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -96,20 +97,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    color: Colors.textPrimary,
     fontSize: FontSize.body,
     fontWeight: '600',
     marginBottom: 4,
   },
   symbol: {
-    color: Colors.textSecondary,
     fontSize: FontSize.caption,
   },
   priceContainer: {
     alignItems: 'flex-end',
   },
   price: {
-    color: Colors.textPrimary,
     fontSize: FontSize.body,
     fontWeight: '600',
     marginBottom: 4,

@@ -1,19 +1,25 @@
 // app/(tabs)/favoriler.tsx (DOĞRU VE NİHAİ LAYOUT)
 
-import React from 'react';
+import React, { useState } from 'react';
 import { FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { AltinListItem } from '../../components/AltinListItem';
 import { CustomHeader } from '../../components/CustomHeader';
 import { DovizListItem } from '../../components/DovizListItem';
 import { PariteListItem } from '../../components/PariteListItem';
-import { Colors, FontSize } from '../../constants/Theme';
+import { SocialDrawer } from '../../components/SocialDrawer';
+import { FontSize } from '../../constants/Theme';
 import { useCombinedMarketData } from '../../hooks/useCombinedMarketData';
+import { useThemeColors } from '../../hooks/useTheme';
 import { useFavoritesStore } from '../../store/favoritesStore';
 import { FinancialAsset } from '../../types';
+
+const HEADER_HEIGHT = 60; // BU SABİTİ TANIMLA! CustomHeader'ın yüksekliği bu.
 
 export default function FavorilerScreen() {
   const { data: allAssets = [], isLoading, isError } = useCombinedMarketData();
   const { favorites } = useFavoritesStore();
+  const colors = useThemeColors();
+  const [isDrawerVisible, setIsDrawerVisible] = useState(false);
 
   const favoriteAssets = allAssets.filter((asset: FinancialAsset) => favorites.includes(asset.id));
 
@@ -36,7 +42,7 @@ export default function FavorilerScreen() {
 
   const renderSeparator = () => {
     // Sabit bir separator döndür, item'a bağımlı olmasın
-    return <View style={{ height: 1, backgroundColor: Colors.border }} />;
+    return <View style={{ height: 1, backgroundColor: colors.border }} />;
   };
 
   if (isLoading && favoriteAssets.length === 0) {
@@ -44,7 +50,7 @@ export default function FavorilerScreen() {
       <SafeAreaView style={styles.container}>
         <CustomHeader title="Favoriler" />
         <View style={styles.centerContent}>
-          <Text style={styles.loadingText}>Favoriler yükleniyor...</Text>
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Favoriler yükleniyor...</Text>
         </View>
       </SafeAreaView>
     );
@@ -55,7 +61,7 @@ export default function FavorilerScreen() {
       <SafeAreaView style={styles.container}>
         <CustomHeader title="Favoriler" />
         <View style={styles.centerContent}>
-          <Text style={styles.errorText}>Veri yüklenirken hata oluştu.</Text>
+          <Text style={[styles.errorText, { color: colors.textSecondary }]}>Veri yüklenirken hata oluştu.</Text>
         </View>
       </SafeAreaView>
     );
@@ -66,16 +72,16 @@ export default function FavorilerScreen() {
       <SafeAreaView style={styles.container}>
         <CustomHeader title="Favoriler" />
         <View style={styles.centerContent}>
-          <Text style={styles.emptyText}>Henüz favori varlığınız yok.</Text>
-          <Text style={styles.emptySubtext}>Varlıkları favorilere ekleyerek burada takip edebilirsiniz.</Text>
+          <Text style={[styles.emptyText, { color: colors.textPrimary }]}>Henüz favori varlığınız yok.</Text>
+          <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>Varlıkları favorilere ekleyerek burada takip edebilirsiniz.</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <CustomHeader title="Favoriler" />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <CustomHeader title="Favoriler" onDrawerToggle={() => setIsDrawerVisible(true)} />
       <View style={styles.contentContainer}>
         <FlatList
           data={favoriteAssets}
@@ -86,6 +92,13 @@ export default function FavorilerScreen() {
           contentContainerStyle={{ paddingBottom: 20 }}
         />
       </View>
+
+      {/* Sosyal Medya Drawer */}
+      <SocialDrawer 
+        isVisible={isDrawerVisible}
+        onToggle={() => setIsDrawerVisible(!isDrawerVisible)}
+        topOffset={HEADER_HEIGHT}
+      />
     </SafeAreaView>
   );
 }
@@ -93,7 +106,6 @@ export default function FavorilerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   contentContainer: {
     flex: 1,
@@ -105,23 +117,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   loadingText: {
-    color: Colors.textSecondary,
     fontSize: FontSize.subtitle,
   },
   errorText: {
-    color: Colors.textSecondary,
     fontSize: FontSize.subtitle,
     textAlign: 'center',
   },
   emptyText: {
-    color: Colors.textPrimary,
     fontSize: FontSize.title,
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 8,
   },
   emptySubtext: {
-    color: Colors.textSecondary,
     fontSize: FontSize.body,
     textAlign: 'center',
   },

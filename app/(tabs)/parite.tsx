@@ -1,13 +1,16 @@
 // app/(tabs)/parite.tsx (DOĞRU VE NİHAİ LAYOUT)
 
 import React, { useMemo, useState } from 'react';
-import { FlatList, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { AssetListItemSkeleton } from '../../components/AssetListItemSkeleton';
 import { CustomHeader } from '../../components/CustomHeader';
+import { ErrorState } from '../../components/ErrorState';
 import { ItemSeparator, PariteListItem } from '../../components/PariteListItem';
-import { Colors, FontSize } from '../../constants/Theme';
+import { SocialDrawer } from '../../components/SocialDrawer';
+import { FontSize } from '../../constants/Theme';
 import { usePariteData } from '../../hooks/usePariteData';
-
+import { useThemeColors } from '../../hooks/useTheme';
+const HEADER_HEIGHT = 60;
 // YENİ VE GELİŞMİŞ SortType
 type SortType = 
   | 'default' 
@@ -16,6 +19,8 @@ type SortType =
 
 export default function PariteScreen() {
   const { data: originalData = [], isLoading, isError, refetch } = usePariteData();
+  const colors = useThemeColors();
+  const [isDrawerVisible, setIsDrawerVisible] = useState(false);
 
   // YENİ STATE'LER
   const [searchQuery, setSearchQuery] = useState('');
@@ -62,27 +67,27 @@ export default function PariteScreen() {
   // Sadece ilk yüklemede ve elimizde hiç veri yokken tam ekran yükleme göstergesi göster.
   if (isLoading && originalData.length === 0) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Kendi başlığımızı güvenli alanın içine koyuyoruz */}
         <CustomHeader title="Parite" />
         
         {/* Arama çubuğunun da iskeletini gösterebiliriz veya direkt listeyi gösteririz */}
         <View style={styles.contentContainer}>
-          <View style={styles.controlsContainer}>
+          <View style={[styles.controlsContainer, { borderBottomColor: colors.border }]}>
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, { backgroundColor: colors.card, color: colors.textPrimary }]}
               placeholder="Arama yap..."
-              placeholderTextColor={Colors.textSecondary}
+              placeholderTextColor={colors.textSecondary}
               value=""
               editable={false}
             />
-            <View style={styles.sortContainer}>
-              {[...Array(4).keys()].map(i => (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sortContainer}>
+              {[...Array(3).keys()].map(i => (
                 <View key={i} style={[styles.sortButton, { opacity: 0.3 }]}>
                   <Text style={styles.sortButtonText}>...</Text>
                 </View>
               ))}
-            </View>
+            </ScrollView>
           </View>
           {/* 5 adet iskelet elemanı gösterelim */}
           {[...Array(5).keys()].map(i => <AssetListItemSkeleton key={i} />)}
@@ -92,66 +97,78 @@ export default function PariteScreen() {
   }
 
   if (isError) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <CustomHeader title="Parite" />
-        <View style={styles.centerContent}>
-          <Text style={styles.errorText}>Veri yüklenirken hata oluştu.</Text>
-          <TouchableOpacity onPress={() => refetch()} style={styles.retryButton}>
-            <Text style={styles.retryButtonText}>Tekrar Dene</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
+    return <ErrorState onRetry={refetch} />;
   }
 
   return (
     // En dışı SafeAreaView ile sarmalıyoruz
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Kendi başlığımızı güvenli alanın içine koyuyoruz */}
-      <CustomHeader title="Parite" />
+      <CustomHeader title="Parite" onDrawerToggle={() => setIsDrawerVisible(true)} />
 
       {/* Geri kalan her şey bir View içinde */}
       <View style={styles.contentContainer}>
         {/* Arama ve Sıralama Bölümü */}
-        <View style={styles.controlsContainer}>
+        <View style={[styles.controlsContainer, { borderBottomColor: colors.border }]}>
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { backgroundColor: colors.card, color: colors.textPrimary }]}
             placeholder="Arama yap..."
-            placeholderTextColor={Colors.textSecondary}
+            placeholderTextColor={colors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
 
           {/* --- YENİ SIRALAMA BUTONLARI BÖLÜMÜ --- */}
-          <View style={styles.sortContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sortContainer}>
             <TouchableOpacity
-              style={[styles.sortButton, sortType === 'default' && styles.sortButtonActive]}
+              style={[
+                styles.sortButton, 
+                { borderColor: colors.border },
+                sortType === 'default' && { backgroundColor: colors.primary, borderColor: colors.primary }
+              ]}
               onPress={() => setSortType('default')}
             >
-              <Text style={[styles.sortButtonText, sortType === 'default' && styles.sortButtonTextActive]}>Varsayılan</Text>
+              <Text style={[
+                styles.sortButtonText, 
+                { color: colors.textSecondary },
+                sortType === 'default' && { color: colors.textPrimary, fontWeight: '600' }
+              ]}>Varsayılan</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.sortButton, (sortType === 'name-asc' || sortType === 'name-desc') && styles.sortButtonActive]}
+              style={[
+                styles.sortButton, 
+                { borderColor: colors.border },
+                (sortType === 'name-asc' || sortType === 'name-desc') && { backgroundColor: colors.primary, borderColor: colors.primary }
+              ]}
               onPress={() => handleSortPress('name')}
             >
-              <Text style={[styles.sortButtonText, (sortType === 'name-asc' || sortType === 'name-desc') && styles.sortButtonTextActive]}>
+              <Text style={[
+                styles.sortButtonText, 
+                { color: colors.textSecondary },
+                (sortType === 'name-asc' || sortType === 'name-desc') && { color: colors.textPrimary, fontWeight: '600' }
+              ]}>
                 İsim {sortType === 'name-asc' ? '↑' : sortType === 'name-desc' ? '↓' : ''}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.sortButton, (sortType === 'price-asc' || sortType === 'price-desc') && styles.sortButtonActive]}
+              style={[
+                styles.sortButton, 
+                { borderColor: colors.border },
+                (sortType === 'price-asc' || sortType === 'price-desc') && { backgroundColor: colors.primary, borderColor: colors.primary }
+              ]}
               onPress={() => handleSortPress('price')}
             >
-              <Text style={[styles.sortButtonText, (sortType === 'price-asc' || sortType === 'price-desc') && styles.sortButtonTextActive]}>
+              <Text style={[
+                styles.sortButtonText, 
+                { color: colors.textSecondary },
+                (sortType === 'price-asc' || sortType === 'price-desc') && { color: colors.textPrimary, fontWeight: '600' }
+              ]}>
                 Fiyat {sortType === 'price-asc' ? '↑' : sortType === 'price-desc' ? '↓' : ''}
               </Text>
             </TouchableOpacity>
-
-
-          </View>
+          </ScrollView>
         </View>
 
         {/* --- LİSTE BÖLÜMÜNÜ GÜNCELLE --- */}
@@ -164,6 +181,13 @@ export default function PariteScreen() {
           contentContainerStyle={{ paddingBottom: 20 }}
         />
       </View>
+
+      {/* Sosyal Medya Drawer */}
+      <SocialDrawer 
+        isVisible={isDrawerVisible}
+        onToggle={() => setIsDrawerVisible(!isDrawerVisible)}
+        topOffset={HEADER_HEIGHT}
+      />
     </SafeAreaView>
   );
 }
@@ -171,7 +195,6 @@ export default function PariteScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   // YENİ STİL: Başlığın altındaki içeriği sarmalamak için
   contentContainer: {
@@ -188,11 +211,9 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
   },
   searchInput: {
-    backgroundColor: '#161b22',
-    color: Colors.textPrimary,
+    // backgroundColor: '#161b22', // SİL BUNU ARTIK!
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 8,
@@ -200,13 +221,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyText: {
-    color: Colors.textSecondary,
     textAlign: 'center',
     marginTop: 50,
     fontSize: FontSize.subtitle,
   },
   text: {
-    color: Colors.textPrimary,
     fontSize: 18,
     textAlign: 'center',
   },
@@ -218,38 +237,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: Colors.border,
     marginRight: 8,
     justifyContent: 'center',
     alignItems: 'center',
   },
   sortButtonActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    // backgroundColor ve borderColor gibi dinamik stilleri buradan çıkar.
   },
   sortButtonText: {
-    color: Colors.textSecondary,
     fontSize: 14,
   },
   sortButtonTextActive: {
-    color: Colors.textPrimary,
     fontWeight: '600',
   },
   errorText: {
-    color: Colors.textSecondary,
     textAlign: 'center',
     marginTop: 50,
     fontSize: FontSize.subtitle,
   },
   retryButton: {
-    backgroundColor: Colors.primary,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
     marginTop: 20,
   },
   retryButtonText: {
-    color: Colors.textPrimary,
     fontSize: FontSize.body,
     fontWeight: '600',
   },

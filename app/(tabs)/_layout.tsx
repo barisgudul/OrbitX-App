@@ -1,17 +1,19 @@
 // app/(tabs)/_layout.tsx 
 import { FontAwesome } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import { Colors } from '../../constants/Theme';
+import { useThemeColors } from '../../hooks/useTheme';
 
 export default function TabsLayout() {
+  const colors = useThemeColors(); // HOOK'U ÇAĞIR!
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: Colors.textSecondary,
+        tabBarActiveTintColor: colors.primary, // DİNAMİK RENK KULLAN
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
-          backgroundColor: Colors.background,
-          borderTopColor: Colors.border,
+          backgroundColor: colors.background, // DİNAMİK RENK KULLAN
+          borderTopColor: colors.border,
         },
         headerShown: false, 
       }}

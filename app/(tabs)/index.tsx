@@ -5,9 +5,11 @@ import { AssetListItemSkeleton } from '../../components/AssetListItemSkeleton';
 import { CustomHeader } from '../../components/CustomHeader'; // Header'ı burada import et
 import { DovizListItem, ItemSeparator } from '../../components/DovizListItem';
 import { ErrorState } from '../../components/ErrorState'; // Yeni bileşeni import et
-import { Colors, FontSize } from '../../constants/Theme';
+import { SocialDrawer } from '../../components/SocialDrawer';
+import { FontSize } from '../../constants/Theme';
 import { useCurrencyData } from '../../hooks/useCurrencyData';
-
+import { useThemeColors } from '../../hooks/useTheme';
+ const HEADER_HEIGHT = 60;
 // YENİ VE GELİŞMİŞ SortType
 type SortType = 
   | 'default' 
@@ -16,11 +18,11 @@ type SortType =
 
 export default function DovizScreen() {
   const { data: originalData = [], isLoading, isError, refetch } = useCurrencyData();
-
-  
+  const colors = useThemeColors();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortType, setSortType] = useState<SortType>('default');
+  const [isDrawerVisible, setIsDrawerVisible] = useState(false);
 
   // YENİ SIRALAMA MANTIĞI
   const handleSortPress = (type: 'name' | 'price') => {
@@ -61,17 +63,17 @@ export default function DovizScreen() {
   // Sadece ilk yüklemede ve elimizde hiç veri yokken tam ekran yükleme göstergesi göster.
   if (isLoading && originalData.length === 0) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Kendi başlığımızı güvenli alanın içine koyuyoruz */}
         <CustomHeader title="Döviz" />
         
         {/* Arama çubuğunun da iskeletini gösterebiliriz veya direkt listeyi gösteririz */}
         <View style={styles.contentContainer}>
-          <View style={styles.controlsContainer}>
+          <View style={[styles.controlsContainer, { borderBottomColor: colors.border }]}>
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, { color: colors.textPrimary }]}
               placeholder="Döviz kuru ara..."
-              placeholderTextColor={Colors.textSecondary}
+              placeholderTextColor={colors.textSecondary}
               value=""
               editable={false}
             />
@@ -97,45 +99,69 @@ export default function DovizScreen() {
 
   return (
     // En dışı SafeAreaView ile sarmalıyoruz
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       
       
       {/* Kendi başlığımızı güvenli alanın içine koyuyoruz */}
-      <CustomHeader title="Döviz" />
+      <CustomHeader title="Döviz" onDrawerToggle={() => setIsDrawerVisible(true)} />
 
       {/* Geri kalan her şey bir View içinde */}
       <View style={styles.contentContainer}>
-        <View style={styles.controlsContainer}>
+        <View style={[styles.controlsContainer, { borderBottomColor: colors.border }]}>
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: colors.textPrimary }]}
             placeholder="Döviz kuru ara..."
-            placeholderTextColor={Colors.textSecondary}
+            placeholderTextColor={colors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sortContainer}>
             <TouchableOpacity
-              style={[styles.sortButton, sortType === 'default' && styles.sortButtonActive]}
+              style={[
+                styles.sortButton, 
+                { borderColor: colors.border },
+                sortType === 'default' && { backgroundColor: colors.primary, borderColor: colors.primary }
+              ]}
               onPress={() => setSortType('default')}
             >
-              <Text style={[styles.sortButtonText, sortType === 'default' && styles.sortButtonTextActive]}>Varsayılan</Text>
+              <Text style={[
+                styles.sortButtonText, 
+                { color: colors.textSecondary },
+                sortType === 'default' && { color: colors.textPrimary, fontWeight: '600' }
+              ]}>Varsayılan</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.sortButton, (sortType === 'name-asc' || sortType === 'name-desc') && styles.sortButtonActive]}
+              style={[
+                styles.sortButton, 
+                { borderColor: colors.border },
+                (sortType === 'name-asc' || sortType === 'name-desc') && { backgroundColor: colors.primary, borderColor: colors.primary }
+              ]}
               onPress={() => handleSortPress('name')}
             >
-              <Text style={[styles.sortButtonText, (sortType === 'name-asc' || sortType === 'name-desc') && styles.sortButtonTextActive]}>
+              <Text style={[
+                styles.sortButtonText, 
+                { color: colors.textSecondary },
+                (sortType === 'name-asc' || sortType === 'name-desc') && { color: colors.textPrimary, fontWeight: '600' }
+              ]}>
                 İsim {sortType === 'name-asc' ? '↑' : sortType === 'name-desc' ? '↓' : ''}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.sortButton, (sortType === 'price-asc' || sortType === 'price-desc') && styles.sortButtonActive]}
+              style={[
+                styles.sortButton, 
+                { borderColor: colors.border },
+                (sortType === 'price-asc' || sortType === 'price-desc') && { backgroundColor: colors.primary, borderColor: colors.primary }
+              ]}
               onPress={() => handleSortPress('price')}
             >
-              <Text style={[styles.sortButtonText, (sortType === 'price-asc' || sortType === 'price-desc') && styles.sortButtonTextActive]}>
+              <Text style={[
+                styles.sortButtonText, 
+                { color: colors.textSecondary },
+                (sortType === 'price-asc' || sortType === 'price-desc') && { color: colors.textPrimary, fontWeight: '600' }
+              ]}>
                 Fiyat {sortType === 'price-asc' ? '↑' : sortType === 'price-desc' ? '↓' : ''}
               </Text>
             </TouchableOpacity>
@@ -151,6 +177,13 @@ export default function DovizScreen() {
           contentContainerStyle={{ paddingBottom: 20 }}
         />
       </View>
+
+      {/* Sosyal Medya Drawer */}
+      <SocialDrawer 
+        isVisible={isDrawerVisible}
+        onToggle={() => setIsDrawerVisible(!isDrawerVisible)}
+        topOffset={HEADER_HEIGHT}
+      />
     </SafeAreaView>
   );
 }
@@ -158,8 +191,8 @@ export default function DovizScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
+
   // YENİ STİL: Başlığın altındaki içeriği sarmalamak için
   contentContainer: {
     flex: 1,
@@ -174,11 +207,9 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
   },
   searchInput: {
     backgroundColor: '#161b22',
-    color: Colors.textPrimary,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 8,
@@ -193,36 +224,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: Colors.border,
     marginRight: 8,
     justifyContent: 'center',
     alignItems: 'center',
   },
   sortButtonActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
   },
   sortButtonText: {
-    color: Colors.textSecondary,
     fontSize: 14,
   },
   sortButtonTextActive: {
-    color: Colors.textPrimary,
     fontWeight: '600',
   },
   emptyText: {
-    color: Colors.textSecondary,
     textAlign: 'center',
     marginTop: 50,
     fontSize: FontSize.subtitle,
   },
   text: {
-    color: Colors.textPrimary,
     fontSize: 18,
     textAlign: 'center',
   },
   errorText: {
-    color: Colors.accentRed,
     textAlign: 'center',
     marginTop: 8,
   }

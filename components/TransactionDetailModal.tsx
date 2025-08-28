@@ -2,7 +2,8 @@
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import { FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Colors, FontSize } from '../constants/Theme';
+import { FontSize } from '../constants/Theme';
+import { useThemeColors } from '../hooks/useTheme';
 import { FinancialAsset, Transaction } from '../types';
 import { TransactionListItem } from './TransactionListItem';
 
@@ -14,6 +15,8 @@ interface TransactionDetailModalProps {
 }
 
 export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({ visible, onClose, asset, transactions }) => {
+  const colors = useThemeColors();
+  
   if (!asset) return null;
 
   const totalCost = transactions.reduce((sum, t) => sum + (t.amount * t.pricePerUnit), 0);
@@ -41,7 +44,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({ 
           case 'PA':
             return <MaterialCommunityIcons name="cube-outline" size={iconSize} color="#CED0DD" />;
           default:
-            return <FontAwesome5 name="database" size={iconSize} color={Colors.textSecondary} />;
+            return <FontAwesome5 name="database" size={iconSize} color={colors.textSecondary} />;
         }
       default:
         return null;
@@ -51,28 +54,28 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({ 
   return (
     <Modal visible={visible} transparent={true} animationType="slide">
       <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
+        <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
           {/* HEADER */}
           <View style={styles.header}>
-            <View style={styles.iconContainer}>
+            <View style={[styles.iconContainer, { backgroundColor: colors.card }]}>
               {renderIcon(asset)}
             </View>
-            <Text style={styles.title}>{asset.name}</Text>
-            <Text style={styles.subtitle}>{asset.symbol} İşlemleri</Text>
+            <Text style={[styles.title, { color: colors.textPrimary }]}>{asset.name}</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{asset.symbol} İşlemleri</Text>
           </View>
 
           {/* ÖZET KARTI */}
-          <View style={styles.summaryCard}>
+          <View style={[styles.summaryCard, { backgroundColor: colors.card }]}>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Toplam Miktar</Text>
-              <Text style={styles.summaryValue}>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Toplam Miktar</Text>
+              <Text style={[styles.summaryValue, { color: colors.textPrimary }]}>
                 {totalAmount.toLocaleString()} {asset.symbol}
               </Text>
             </View>
-            <View style={styles.summaryDivider} />
+            <View style={[styles.summaryDivider, { backgroundColor: colors.border }]} />
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Toplam Maliyet</Text>
-              <Text style={styles.summaryValue}>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Toplam Maliyet</Text>
+              <Text style={[styles.summaryValue, { color: colors.textPrimary }]}>
                 ₺{totalCost.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
               </Text>
             </View>
@@ -80,20 +83,20 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({ 
 
           {/* İŞLEM LİSTESİ */}
           <View style={styles.transactionsHeader}>
-            <Text style={styles.transactionsTitle}>İşlem Geçmişi</Text>
-            <Text style={styles.transactionsCount}>{transactions.length} işlem</Text>
+            <Text style={[styles.transactionsTitle, { color: colors.textPrimary }]}>İşlem Geçmişi</Text>
+            <Text style={[styles.transactionsCount, { color: colors.textSecondary }]}>{transactions.length} işlem</Text>
           </View>
 
           <FlatList
             data={transactions}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => <TransactionListItem transaction={item} asset={asset} />}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.border }]} />}
             style={styles.transactionsList}
           />
 
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Text style={styles.closeButtonText}>Kapat</Text>
+          <TouchableOpacity onPress={onClose} style={[styles.closeButton, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.closeButtonText, { color: colors.textPrimary }]}>Kapat</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -108,7 +111,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.7)',
   },
   modalContent: { 
-    backgroundColor: Colors.background,
     padding: 24, 
     height: '80%',
     borderTopLeftRadius: 24, 
@@ -122,25 +124,21 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: Colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
   },
   title: {
-    color: Colors.textPrimary,
     fontSize: FontSize.title,
     fontWeight: 'bold',
     marginBottom: 4,
     textAlign: 'center',
   },
   subtitle: {
-    color: Colors.textSecondary,
     fontSize: FontSize.body,
     textAlign: 'center',
   },
   summaryCard: {
-    backgroundColor: Colors.card,
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
@@ -152,20 +150,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   summaryLabel: {
-    color: Colors.textSecondary,
     fontSize: FontSize.caption,
     marginBottom: 8,
     fontWeight: '500',
   },
   summaryValue: {
-    color: Colors.textPrimary,
     fontSize: FontSize.subtitle,
     fontWeight: 'bold',
   },
   summaryDivider: {
     width: 1,
     height: 40,
-    backgroundColor: Colors.border,
     marginHorizontal: 20,
   },
   transactionsHeader: {
@@ -175,12 +170,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   transactionsTitle: {
-    color: Colors.textPrimary,
     fontSize: FontSize.subtitle,
     fontWeight: '600',
   },
   transactionsCount: {
-    color: Colors.textSecondary,
     fontSize: FontSize.caption,
   },
   transactionsList: {
@@ -189,19 +182,15 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: Colors.border,
     marginLeft: 16,
   },
   closeButton: {
-    backgroundColor: Colors.card,
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   closeButtonText: {
-    color: Colors.textPrimary,
     fontSize: FontSize.body,
     fontWeight: '600',
   },

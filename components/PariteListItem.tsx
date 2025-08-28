@@ -4,7 +4,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { MotiView } from 'moti';
 import React from 'react';
 import { ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Colors } from '../constants/Theme';
+import { useThemeColors } from '../hooks/useTheme';
 import { useFavoritesStore } from '../store/favoritesStore';
 import { FinancialAsset } from '../types';
 
@@ -16,6 +16,7 @@ interface AssetListItemProps {
 
 const PariteListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) => {
   const { toggleFavorite, isFavorite } = useFavoritesStore();
+  const colors = useThemeColors();
   const isAssetFavorite = isFavorite(asset.id);
 
   const content = (pressed: boolean) => (
@@ -26,26 +27,26 @@ const PariteListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress })
       imageStyle={styles.backgroundImageStyle}
       resizeMode="cover"
     >
-      <View style={styles.overlay}>
+      <View style={[styles.overlay, { backgroundColor: colors.imageOverlay }]}>
         <View style={styles.nameContainer}>
-          <Text style={styles.name}>{asset.name}</Text>
-          <Text style={styles.symbol}>{asset.symbol}</Text>
+          <Text style={[styles.name, { color: colors.textPrimary }]}>{asset.name}</Text>
+          <Text style={[styles.symbol, { color: colors.textSecondary }]}>{asset.symbol}</Text>
         </View>
         <View style={styles.priceSection}>
           <View style={styles.priceContainer}>
             <Text style={styles.priceLabel}>Alış</Text>
-            <Text style={styles.priceValue}>
+            <Text style={[styles.priceValue, { color: colors.textPrimary }]}>
               {asset.alis.toLocaleString('tr-TR', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
             </Text>
           </View>
           <View style={styles.priceContainer}>
             <Text style={styles.priceLabel}>Satış</Text>
-            <Text style={styles.priceValue}>
+            <Text style={[styles.priceValue, { color: colors.textPrimary }]}>
               {asset.satis.toLocaleString('tr-TR', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
             </Text>
           </View>
           <TouchableOpacity onPress={(e) => { e.preventDefault(); toggleFavorite(asset.id); }} style={styles.starContainer}>
-            <FontAwesome name={isAssetFavorite ? 'star' : 'star-o'} size={22} color={isAssetFavorite ? '#FFD700' : Colors.textSecondary} />
+            <FontAwesome name={isAssetFavorite ? 'star' : 'star-o'} size={22} color={isAssetFavorite ? '#FFD700' : colors.textSecondary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -93,7 +94,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   name: {
-    color: Colors.textPrimary,
     fontSize: 18,
     fontWeight: 'bold',
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
@@ -123,7 +123,6 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   priceValue: {
-    color: Colors.textPrimary,
     fontSize: 16,
     fontWeight: '600',
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
@@ -134,10 +133,13 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     padding: 8,
   },
-  separator: { height: 1, backgroundColor: Colors.border },
+  separator: { height: 1 },
 });
 
-const ItemSeparator = () => <View style={styles.separator} />;
+const ItemSeparator = () => {
+  const colors = useThemeColors();
+  return <View style={[styles.separator, { backgroundColor: colors.border }]} />;
+};
 
 export { ItemSeparator, PariteListItem };
 

@@ -2,7 +2,8 @@
 import { FontAwesome } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Colors, FontSize } from '../constants/Theme';
+import { FontSize } from '../constants/Theme';
+import { useThemeColors } from '../hooks/useTheme';
 
 interface EmptyStateProps {
   icon: React.ComponentProps<typeof FontAwesome>['name'];
@@ -10,16 +11,20 @@ interface EmptyStateProps {
   message: string;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, message }) => (
-  <View style={styles.container}>
-    <FontAwesome name={icon} size={60} color={Colors.textSecondary} />
-    <Text style={styles.title}>{title}</Text>
-    <Text style={styles.message}>{message}</Text>
-  </View>
-);
+export const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, message }) => {
+  const colors = useThemeColors();
+  
+  return (
+    <View style={styles.container}>
+      <FontAwesome name={icon} size={60} color={colors.textSecondary} />
+      <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
+      <Text style={[styles.message, { color: colors.textSecondary }]}>{message}</Text>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  title: { color: Colors.textPrimary, fontSize: FontSize.subtitle, fontWeight: 'bold', marginTop: 20, marginBottom: 8 },
-  message: { color: Colors.textSecondary, fontSize: FontSize.body, textAlign: 'center' },
+  title: { fontSize: FontSize.subtitle, fontWeight: 'bold', marginTop: 20, marginBottom: 8 },
+  message: { fontSize: FontSize.body, textAlign: 'center' },
 });

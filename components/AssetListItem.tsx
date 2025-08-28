@@ -1,10 +1,10 @@
-// components/AssetListItem.tsx (YENİ KART TASARIMI)
+// components/AssetListItem.tsx
 
 import { FontAwesome } from '@expo/vector-icons';
 import { MotiView } from 'moti';
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Colors } from '../constants/Theme';
+import { useThemeColors } from '../hooks/useTheme';
 import { useFavoritesStore } from '../store/favoritesStore';
 import { FinancialAsset } from '../types';
 
@@ -16,32 +16,33 @@ interface AssetListItemProps {
 
 const AssetListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) => {
   const { toggleFavorite, isFavorite } = useFavoritesStore();
+  const colors = useThemeColors();
   const isAssetFavorite = isFavorite(asset.id);
 
   const renderIcon = (asset: FinancialAsset) => {
     if (asset.image) {
       return <Image source={{ uri: asset.image }} style={styles.image} resizeMode="contain" />;
     }
-    return <FontAwesome name="database" size={28} color={Colors.textSecondary} />;
+    return <FontAwesome name="database" size={28} color={colors.textSecondary} />;
   };
 
   const content = (pressed: boolean) => (
-    <View style={[styles.card, { backgroundColor: pressed ? '#101010' : Colors.card }]}>
+    <View style={[styles.card, { backgroundColor: pressed ? '#101010' : colors.card }]}>
       <View style={styles.leftContainer}>
         <View style={styles.iconContainer}>{renderIcon(asset)}</View>
         <View style={styles.nameContainer}>
-          <Text style={styles.name}>{asset.name}</Text>
-          <Text style={styles.symbol}>{asset.symbol}</Text>
+          <Text style={[styles.name, { color: colors.textPrimary }]}>{asset.name}</Text>
+          <Text style={[styles.symbol, { color: colors.textSecondary }]}>{asset.symbol}</Text>
         </View>
       </View>
       <View style={styles.rightContainer}>
         <View style={styles.priceContainer}>
-          <Text style={styles.satisPrice}>
+          <Text style={[styles.satisPrice, { color: colors.textPrimary }]}>
             ₺{asset.satis.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </Text>
         </View>
         <View style={styles.priceContainer}>
-          <Text style={styles.alisPrice}>
+          <Text style={[styles.alisPrice, { color: colors.textSecondary }]}>
             ₺{asset.alis.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </Text>
         </View>
@@ -49,7 +50,7 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) 
           e.preventDefault();
           toggleFavorite(asset.id);
         }} style={styles.starContainer}>
-          <FontAwesome name={isAssetFavorite ? 'star' : 'star-o'} size={22} color={isAssetFavorite ? '#FFD700' : Colors.textSecondary} />
+          <FontAwesome name={isAssetFavorite ? 'star' : 'star-o'} size={22} color={isAssetFavorite ? '#FFD700' : colors.textSecondary} />
         </TouchableOpacity>
       </View>
     </View>
@@ -107,12 +108,10 @@ const styles = StyleSheet.create({
 
   // DEĞİŞİKLİK BURADA
   name: {
-    color: Colors.textPrimary,
     fontSize: 15, // Yazı boyutunu 16'dan 15'e çektik
     fontWeight: '600',
   },
   symbol: {
-    color: Colors.textSecondary,
     fontSize: 12, // Bunu da 13'ten 12'ye çektik
     paddingTop: 4,
   },
@@ -125,12 +124,10 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   satisPrice: {
-    color: Colors.textPrimary,
     fontSize: 15, // Satış fiyatını 16'dan 15'e çektik
     fontWeight: '600',
   },
   alisPrice: {
-    color: Colors.textSecondary,
     fontSize: 12, // Alış fiyatını 13'ten 12'ye çektik
     paddingTop: 4,
   },
@@ -140,9 +137,12 @@ const styles = StyleSheet.create({
     paddingLeft: 12, // Yıldızla arasını biraz daralttık
     padding: 8,
   },
-  separator: { height: 1, backgroundColor: Colors.border },
+  separator: { height: 1 },
 });
 
-const ItemSeparator = () => <View style={styles.separator} />;
+const ItemSeparator = () => {
+  const colors = useThemeColors();
+  return <View style={[styles.separator, { backgroundColor: colors.border }]} />;
+};
 
 export { AssetListItem, ItemSeparator };
