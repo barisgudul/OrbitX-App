@@ -7,8 +7,8 @@ import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
-import { BorderRadius, FontSize, Shadows, Spacing } from '../constants/Theme';
-import { useIsDark, useThemeColors, useThemeToggle } from '../hooks/useTheme';
+import { BorderRadius, FontSize, Spacing } from '../constants/Theme';
+import { useThemeColors, useThemeToggle } from '../hooks/useTheme';
 
 const { height: screenHeight } = Dimensions.get('window');
 const DRAWER_WIDTH = 300;
@@ -22,7 +22,7 @@ interface SocialDrawerProps {
 export const SocialDrawer: React.FC<SocialDrawerProps> = ({ isVisible, onToggle, topOffset }) => {
   const colors = useThemeColors();
   const toggleTheme = useThemeToggle();
-  const isDark = useIsDark();
+  const { isDark } = useThemeColors();
   
   const translateX = useSharedValue(-DRAWER_WIDTH);
 
@@ -75,8 +75,10 @@ export const SocialDrawer: React.FC<SocialDrawerProps> = ({ isVisible, onToggle,
             { 
               backgroundColor: colors.card, 
               borderRightColor: colors.border,
+              borderRightWidth: 1,
               top: topOffset,
-              height: screenHeight - topOffset
+              height: screenHeight - topOffset,
+              ...colors.shadows.large
             },
             animatedStyle
           ]}
@@ -141,7 +143,6 @@ const styles = StyleSheet.create({
     zIndex: 999,
     borderTopRightRadius: BorderRadius.lg,
     borderBottomRightRadius: BorderRadius.lg,
-    ...Shadows.large,
   },
   drawerContent: {
     flex: 1,

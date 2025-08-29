@@ -1,8 +1,11 @@
+// hooks/useTheme.ts (DOĞRU VE NİHAİ VERSİYON)
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useMemo } from 'react';
 import { useColorScheme as useSystemColorScheme } from 'react-native';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { ThemeColors } from '../constants/Theme';
+import { ThemeColors, createShadows } from '../constants/Theme';
 
 type ThemeMode = 'dark' | 'light' | 'system';
 
@@ -10,39 +13,18 @@ interface ThemeState {
   mode: ThemeMode;
   setMode: (mode: ThemeMode) => void;
   toggleMode: () => void;
-  getColors: (systemColorScheme: string | null) => typeof ThemeColors.dark;
-  isDark: (systemColorScheme: string | null) => boolean;
 }
 
-export const useTheme = create<ThemeState>()(
+// Store SADECE ve SADECE en temel state'i tutmalı.
+export const useThemeStore = create<ThemeState>()(
   persist(
     (set, get) => ({
-      mode: 'dark', // Varsayılan olarak dark mode - senin istediğin renkler
-      setMode: (mode: ThemeMode) => {
-        set({ mode });
-      },
+      mode: 'dark',
+      setMode: (mode: ThemeMode) => set({ mode }),
       toggleMode: () => {
         const currentMode = get().mode;
         const newMode = currentMode === 'dark' ? 'light' : 'dark';
         set({ mode: newMode });
-      },
-      getColors: (systemColorScheme: string | null) => {
-        const { mode } = get();
-        
-        if (mode === 'system') {
-          return systemColorScheme === 'dark' ? ThemeColors.dark : ThemeColors.light;
-        }
-        
-        return ThemeColors[mode];
-      },
-      isDark: (systemColorScheme: string | null) => {
-        const { mode } = get();
-        
-        if (mode === 'system') {
-          return systemColorScheme === 'dark';
-        }
-        
-        return mode === 'dark';
       },
     }),
     {
@@ -52,15 +34,28 @@ export const useTheme = create<ThemeState>()(
   )
 );
 
-// Kolay kullanım için export
+// HOOK'LAR, o temel state'i alıp KULLANILABİLİR VERİYE DÖNÜŞTÜRMELİ.
+// Bu, sonsuz döngüyü engeller.
+
 export const useThemeColors = () => {
+  const mode = useThemeStore((state) => state.mode);
   const systemColorScheme = useSystemColorScheme();
-  return useTheme(state => state.getColors(systemColorScheme || 'light'));
+
+  // useMemo sayesinde, 'mode' veya 'systemColorScheme' değişmediği sürece
+  // bu fonksiyon yeniden çalışmaz ve her zaman AYNI referanslı objeyi döndürür.
+  // SONSUZ DÖNGÜ BİTTİ.
+  const theme = useMemo(() => {
+    const currentMode = (mode === 'system' ? systemColorScheme : mode) === 'dark' ? 'dark' : 'light';
+    const colors = ThemeColors[currentMode];
+    
+    return {
+      ...colors,
+      shadows: createShadows(colors.shadow || 'rgba(0,0,0,0.1)'),
+      isDark: currentMode === 'dark',
+    };
+  }, [mode, systemColorScheme]);
+
+  return theme;
 };
 
-export const useThemeMode = () => useTheme(state => state.mode);
-export const useThemeToggle = () => useTheme(state => state.toggleMode);
-export const useIsDark = () => {
-  const systemColorScheme = useSystemColorScheme();
-  return useTheme(state => state.isDark(systemColorScheme || 'light'));
-};
+export const useThemeToggle = () => useThemeStore((state) => state.toggleMode);

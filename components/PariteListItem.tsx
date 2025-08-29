@@ -1,5 +1,4 @@
-// components/PariteListItem.tsx (FOTOĞRAFLI VE ŞIK VERSİYON)
-
+// components/PariteListItem.tsx 
 import { FontAwesome } from '@expo/vector-icons';
 import { MotiView } from 'moti';
 import React from 'react';
@@ -7,6 +6,7 @@ import { ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react
 import { useThemeColors } from '../hooks/useTheme';
 import { useFavoritesStore } from '../store/favoritesStore';
 import { FinancialAsset } from '../types';
+import { ListItemOverlay } from './ListItemOverlay';
 
 interface AssetListItemProps {
   asset: FinancialAsset;
@@ -16,32 +16,44 @@ interface AssetListItemProps {
 
 const PariteListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) => {
   const { toggleFavorite, isFavorite } = useFavoritesStore();
-  const colors = useThemeColors();
+  const colors = useThemeColors(); // Artık theme objesinin tamamını alıyoruz
+  const { isDark } = colors; // isDark'ı buradan al, daha temiz.
   const isAssetFavorite = isFavorite(asset.id);
 
   const content = (pressed: boolean) => (
     // DİĞERLERİ GİBİ IMAGEBACKGROUND KULLANIYORUZ
     <ImageBackground
       source={{ uri: asset.image }}
-      style={[styles.container, { backgroundColor: pressed ? '#101010' : 'transparent' }]}
+      style={[
+        styles.container, 
+        { 
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+          ...colors.shadows.small 
+        }
+      ]}
       imageStyle={styles.backgroundImageStyle}
       resizeMode="cover"
     >
-      <View style={[styles.overlay, { backgroundColor: colors.imageOverlay }]}>
+      <ListItemOverlay>
         <View style={styles.nameContainer}>
-          <Text style={[styles.name, { color: colors.textPrimary }]}>{asset.name}</Text>
-          <Text style={[styles.symbol, { color: colors.textSecondary }]}>{asset.symbol}</Text>
+          <Text style={[styles.name, { color: colors.textPrimary }, !isDark && styles.lightThemeTextShadow]}>
+            {asset.name}
+          </Text>
+          <Text style={[styles.symbol, { color: colors.textSecondary }, !isDark && styles.lightThemeTextShadow]}>
+            {asset.symbol}
+          </Text>
         </View>
         <View style={styles.priceSection}>
           <View style={styles.priceContainer}>
-            <Text style={styles.priceLabel}>Alış</Text>
-            <Text style={[styles.priceValue, { color: colors.textPrimary }]}>
+            <Text style={[styles.priceLabel, { color: colors.textSecondary }, !isDark && styles.lightThemeTextShadow]}>Alış</Text>
+            <Text style={[styles.priceValue, { color: colors.textPrimary }, !isDark && styles.lightThemeTextShadow]}>
               {asset.alis.toLocaleString('tr-TR', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
             </Text>
           </View>
           <View style={styles.priceContainer}>
-            <Text style={styles.priceLabel}>Satış</Text>
-            <Text style={[styles.priceValue, { color: colors.textPrimary }]}>
+            <Text style={[styles.priceLabel, { color: colors.textSecondary }, !isDark && styles.lightThemeTextShadow]}>Satış</Text>
+            <Text style={[styles.priceValue, { color: colors.textPrimary }, !isDark && styles.lightThemeTextShadow]}>
               {asset.satis.toLocaleString('tr-TR', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
             </Text>
           </View>
@@ -49,7 +61,7 @@ const PariteListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress })
             <FontAwesome name={isAssetFavorite ? 'star' : 'star-o'} size={22} color={isAssetFavorite ? '#FFD700' : colors.textSecondary} />
           </TouchableOpacity>
         </View>
-      </View>
+      </ListItemOverlay>
     </ImageBackground>
   );
 
@@ -74,19 +86,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 6,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)'
+    borderWidth: 1, // Kenarlık her zaman olsun
   },
   backgroundImageStyle: {
-    opacity: 0.3 // Parite için orta karar bir opaklık
-  },
-  overlay: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(0,0,0,0.5)'
+    opacity: 0.6
   },
   nameContainer: {
     flex: 1, // Alanı doldur
@@ -96,17 +99,10 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 18,
     fontWeight: 'bold',
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
   },
   symbol: {
-    color: 'rgba(230, 237, 243, 0.8)',
     fontSize: 14,
     paddingTop: 4,
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
   },
   priceSection: {
     flexDirection: 'row',
@@ -118,22 +114,24 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   priceLabel: {
-    color: 'rgba(230, 237, 243, 0.7)',
     fontSize: 12,
     marginBottom: 2,
   },
   priceValue: {
     fontSize: 16,
     fontWeight: '600',
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
   },
   starContainer: {
     paddingLeft: 16,
     padding: 8,
   },
   separator: { height: 1 },
+  // StyleSheet'in en altına YENİ STİLİ EKLE!
+  lightThemeTextShadow: {
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
 });
 
 const ItemSeparator = () => {

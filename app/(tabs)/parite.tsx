@@ -1,5 +1,4 @@
-// app/(tabs)/parite.tsx (DOĞRU VE NİHAİ LAYOUT)
-
+// app/(tabs)/parite.tsx 
 import React, { useMemo, useState } from 'react';
 import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { AssetListItemSkeleton } from '../../components/AssetListItemSkeleton';
@@ -75,7 +74,15 @@ export default function PariteScreen() {
         <View style={styles.contentContainer}>
           <View style={[styles.controlsContainer, { borderBottomColor: colors.border }]}>
             <TextInput
-              style={[styles.searchInput, { backgroundColor: colors.card, color: colors.textPrimary }]}
+              style={[
+                styles.searchInput, 
+                { 
+                  backgroundColor: colors.card, 
+                  color: colors.textPrimary,
+                  borderColor: colors.border,
+                  ...colors.shadows.small
+                }
+              ]}
               placeholder="Arama yap..."
               placeholderTextColor={colors.textSecondary}
               value=""
@@ -111,7 +118,15 @@ export default function PariteScreen() {
         {/* Arama ve Sıralama Bölümü */}
         <View style={[styles.controlsContainer, { borderBottomColor: colors.border }]}>
           <TextInput
-            style={[styles.searchInput, { backgroundColor: colors.card, color: colors.textPrimary }]}
+            style={[
+              styles.searchInput, 
+              { 
+                backgroundColor: colors.card, 
+                color: colors.textPrimary,
+                borderColor: colors.border,
+                ...colors.shadows.small
+              }
+            ]}
             placeholder="Arama yap..."
             placeholderTextColor={colors.textSecondary}
             value={searchQuery}
@@ -122,31 +137,37 @@ export default function PariteScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sortContainer}>
             <TouchableOpacity
               style={[
-                styles.sortButton, 
-                { borderColor: colors.border },
-                sortType === 'default' && { backgroundColor: colors.primary, borderColor: colors.primary }
+                styles.sortButton,
+                { 
+                  backgroundColor: sortType === 'default' ? colors.primary : colors.card,
+                  borderColor: sortType === 'default' ? colors.primary : colors.border,
+                  ...colors.shadows.small
+                }
               ]}
               onPress={() => setSortType('default')}
             >
               <Text style={[
-                styles.sortButtonText, 
-                { color: colors.textSecondary },
-                sortType === 'default' && { color: colors.textPrimary, fontWeight: '600' }
+                styles.sortButtonText,
+                { color: sortType === 'default' ? colors.textPrimary : colors.textSecondary },
+                sortType === 'default' && { fontWeight: '600' }
               ]}>Varsayılan</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[
-                styles.sortButton, 
-                { borderColor: colors.border },
-                (sortType === 'name-asc' || sortType === 'name-desc') && { backgroundColor: colors.primary, borderColor: colors.primary }
+                styles.sortButton,
+                { 
+                  backgroundColor: (sortType === 'name-asc' || sortType === 'name-desc') ? colors.primary : colors.card,
+                  borderColor: (sortType === 'name-asc' || sortType === 'name-desc') ? colors.primary : colors.border,
+                  ...colors.shadows.small
+                }
               ]}
               onPress={() => handleSortPress('name')}
             >
               <Text style={[
-                styles.sortButtonText, 
-                { color: colors.textSecondary },
-                (sortType === 'name-asc' || sortType === 'name-desc') && { color: colors.textPrimary, fontWeight: '600' }
+                styles.sortButtonText,
+                { color: (sortType === 'name-asc' || sortType === 'name-desc') ? colors.textPrimary : colors.textSecondary },
+                (sortType === 'name-asc' || sortType === 'name-desc') && { fontWeight: '600' }
               ]}>
                 İsim {sortType === 'name-asc' ? '↑' : sortType === 'name-desc' ? '↓' : ''}
               </Text>
@@ -154,16 +175,19 @@ export default function PariteScreen() {
 
             <TouchableOpacity
               style={[
-                styles.sortButton, 
-                { borderColor: colors.border },
-                (sortType === 'price-asc' || sortType === 'price-desc') && { backgroundColor: colors.primary, borderColor: colors.primary }
+                styles.sortButton,
+                { 
+                  backgroundColor: (sortType === 'price-asc' || sortType === 'price-desc') ? colors.primary : colors.card,
+                  borderColor: (sortType === 'price-asc' || sortType === 'price-desc') ? colors.primary : colors.border,
+                  ...colors.shadows.small
+                }
               ]}
               onPress={() => handleSortPress('price')}
             >
               <Text style={[
-                styles.sortButtonText, 
-                { color: colors.textSecondary },
-                (sortType === 'price-asc' || sortType === 'price-desc') && { color: colors.textPrimary, fontWeight: '600' }
+                styles.sortButtonText,
+                { color: (sortType === 'price-asc' || sortType === 'price-desc') ? colors.textPrimary : colors.textSecondary },
+                (sortType === 'price-asc' || sortType === 'price-desc') && { fontWeight: '600' }
               ]}>
                 Fiyat {sortType === 'price-asc' ? '↑' : sortType === 'price-desc' ? '↓' : ''}
               </Text>
@@ -213,12 +237,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   searchInput: {
-    // backgroundColor: '#161b22', // SİL BUNU ARTIK!
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 8,
     fontSize: FontSize.body,
     marginBottom: 16,
+    borderWidth: 1,
   },
   emptyText: {
     textAlign: 'center',

@@ -7,6 +7,7 @@ import { Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from
 import { useThemeColors } from '../hooks/useTheme';
 import { useFavoritesStore } from '../store/favoritesStore';
 import { FinancialAsset } from '../types';
+import { ListItemOverlay } from './ListItemOverlay';
 
 interface AssetListItemProps {
   asset: FinancialAsset;
@@ -16,7 +17,8 @@ interface AssetListItemProps {
 
 const AltinListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) => {
   const { toggleFavorite, isFavorite } = useFavoritesStore();
-  const colors = useThemeColors();
+  const colors = useThemeColors(); // Artık theme objesinin tamamını alıyoruz
+  const { isDark } = colors; // isDark'ı buradan al, daha temiz.
   const isAssetFavorite = isFavorite(asset.id);
 
   const getBackgroundImage = (asset: FinancialAsset) => {
@@ -41,23 +43,32 @@ const AltinListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) 
 
   const content = (pressed: boolean) => (
     <ImageBackground source={{ uri: getBackgroundImage(asset) }}
-      style={[styles.card, { backgroundColor: pressed ? '#1C1C1E' : 'transparent' }]}
+      style={[
+        styles.card, 
+        { 
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+          ...colors.shadows.small 
+        }
+      ]}
       imageStyle={styles.backgroundImageStyle}
       resizeMode="cover"
     >
-      <View style={[styles.overlay, { backgroundColor: colors.imageOverlay }]}>
+      <ListItemOverlay>
         <View style={styles.leftContainer}>
           <View style={styles.iconContainer}>{renderIcon(asset)}</View>
           <View style={styles.nameContainer}>
-            <Text style={[styles.name, { color: colors.textPrimary }]}>{asset.name}</Text>
+            <Text style={[styles.name, { color: colors.textPrimary }, !isDark && styles.lightThemeTextShadow]}>
+              {asset.name}
+            </Text>
           </View>
         </View>
         <View style={styles.rightContainer}>
           <View style={styles.priceContainer}>
-            <Text style={[styles.satisPrice, { color: colors.textPrimary }]}>
+            <Text style={[styles.satisPrice, { color: colors.textPrimary }, !isDark && styles.lightThemeTextShadow]}>
               Satış: ₺{asset.satis.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Text>
-            <Text style={[styles.alisPrice, { color: colors.textSecondary }]}>
+            <Text style={[styles.alisPrice, { color: colors.textSecondary }, !isDark && styles.lightThemeTextShadow]}>
               Alış: ₺{asset.alis.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
             </Text>
           </View>
@@ -68,7 +79,7 @@ const AltinListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) 
             <FontAwesome name={isAssetFavorite ? 'star' : 'star-o'} size={22} color={isAssetFavorite ? '#FFD700' : colors.textPrimary} />
           </TouchableOpacity>
         </View>
-      </View>
+      </ListItemOverlay>
     </ImageBackground>
   );
 
@@ -92,19 +103,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 6,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)'
+    borderWidth: 1, // Kenarlık her zaman olsun
   },
   backgroundImageStyle: {
-    opacity: 0.25
-  },
-  overlay: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center', // Öğeleri dikeyde ortala
-    padding: 16,
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(0,0,0,0.5)'
+    opacity: 0.6
   },
 
   // DEĞİŞİKLİK BURADA BAŞLIYOR
@@ -140,9 +142,6 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 18,
     fontWeight: 'bold',
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
     flexWrap: 'wrap' // Bu sihirli kelime: Eğer sığmazsan, alt satıra geç!
   },
   // DEĞİŞİKLİK BİTTİ
@@ -153,17 +152,10 @@ const styles = StyleSheet.create({
   satisPrice: {
     fontSize: 16,
     fontWeight: '600',
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3
   },
   alisPrice: {
-    color: 'rgba(230, 237, 243, 0.8)',
     fontSize: 13,
     paddingTop: 4,
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3
   },
   starContainer: {
     paddingLeft: 16,
@@ -171,7 +163,13 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-  }
+  },
+  // StyleSheet'in en altına YENİ STİLİ EKLE!
+  lightThemeTextShadow: {
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
 });
 
 const ItemSeparator = () => {

@@ -94,7 +94,14 @@ export default function CeviriciScreen() {
                             from={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ type: 'timing', duration: 400 }}
-                            style={[styles.conversionCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                            style={[
+                                styles.conversionCard, 
+                                { 
+                                    backgroundColor: colors.card, 
+                                    borderColor: colors.border,
+                                    ...colors.shadows.medium // Bu daha büyük, medium gölge olsun
+                                }
+                            ]}
                         >
                             {/* GİRİŞ BÖLÜMÜ */}
                             <View style={styles.inputSection}>
@@ -135,7 +142,7 @@ export default function CeviriciScreen() {
                             </View>
 
                             {/* ÇIKIŞ BÖLÜMÜ GÜNCELLENDİ */}
-                            <View style={styles.outputSection}>
+                            <View style={[styles.outputSection, { backgroundColor: colors.cardSecondary }]}>
                                 <View style={styles.outputRow}>
                                     {/* DEĞİŞİKLİK 1: YAZIYI KISALTTIK */}
                                     <Text style={[styles.outputLabel, { color: colors.textSecondary }]}>Alış Değeri</Text>
@@ -181,7 +188,7 @@ const styles = StyleSheet.create({
     conversionCard: {
         width: '100%',
         borderRadius: 24,
-        borderWidth: 1,
+        borderWidth: 1, // Kenarlık olsun
         overflow: 'hidden',
     },
     
@@ -233,7 +240,6 @@ const styles = StyleSheet.create({
     },
 
     outputSection: {
-        backgroundColor: 'rgba(1, 4, 9, 0.5)',
         paddingHorizontal: 20, // Yatay padding
         paddingVertical: 10,   // Dikey padding
     },

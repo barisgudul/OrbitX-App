@@ -1,4 +1,4 @@
-// app/(tabs)/favoriler.tsx (DOĞRU VE NİHAİ LAYOUT)
+// app/(tabs)/favoriler.tsx 
 
 import React, { useState } from 'react';
 import { FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';

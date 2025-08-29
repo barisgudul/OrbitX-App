@@ -65,7 +65,15 @@ export default function AltinScreen() {
         <View style={styles.contentContainer}>
           <View style={[styles.controlsContainer, { borderBottomColor: colors.border }]}>
             <TextInput
-              style={[styles.searchInput, { backgroundColor: colors.card, color: colors.textPrimary }]}
+              style={[
+                styles.searchInput, 
+                { 
+                  backgroundColor: colors.card, 
+                  color: colors.textPrimary,
+                  borderColor: colors.border,
+                  ...colors.shadows.small
+                }
+              ]}
               placeholder="Arama yap..."
               placeholderTextColor={colors.textSecondary}
               value=""
@@ -96,7 +104,15 @@ export default function AltinScreen() {
       <View style={styles.contentContainer}>
         <View style={[styles.controlsContainer, { borderBottomColor: colors.border }]}>
           <TextInput
-            style={[styles.searchInput, { backgroundColor: colors.card, color: colors.textPrimary }]}
+            style={[
+              styles.searchInput, 
+              { 
+                backgroundColor: colors.card, 
+                color: colors.textPrimary,
+                borderColor: colors.border,
+                ...colors.shadows.small
+              }
+            ]}
             placeholder="Arama yap..."
             placeholderTextColor={colors.textSecondary}
             value={searchQuery}
@@ -104,54 +120,45 @@ export default function AltinScreen() {
           />
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sortContainer}>
-            <TouchableOpacity
-              style={[
-                styles.sortButton, 
-                { borderColor: colors.border },
-                sortType === 'default' && { backgroundColor: colors.primary, borderColor: colors.primary }
-              ]}
-              onPress={() => setSortType('default')}
-            >
-              <Text style={[
-                styles.sortButtonText, 
-                { color: colors.textSecondary },
-                sortType === 'default' && { color: colors.textPrimary, fontWeight: '600' }
-              ]}>Varsayılan</Text>
-            </TouchableOpacity>
+            {['default', 'name', 'price'].map((type) => {
+              const isDefault = type === 'default';
+              const isActive = isDefault ? sortType === 'default' : sortType.includes(type);
+              
+              // Aktif butonun arkaplanı primary, inaktifin card.
+              const backgroundColor = isActive ? colors.primary : colors.card;
+              // Aktif butonun yazı rengi textPrimary, inaktifin textSecondary. BU EN ÖNEMLİSİ!
+              const textColor = isActive ? colors.textPrimary : colors.textSecondary;
+              // Aktif butonun kenarlığı primary, inaktifin normal border.
+              const borderColor = isActive ? colors.primary : colors.border;
 
-            <TouchableOpacity
-              style={[
-                styles.sortButton, 
-                { borderColor: colors.border },
-                (sortType === 'name-asc' || sortType === 'name-desc') && { backgroundColor: colors.primary, borderColor: colors.primary }
-              ]}
-              onPress={() => handleSortPress('name')}
-            >
-              <Text style={[
-                styles.sortButtonText, 
-                { color: colors.textSecondary },
-                (sortType === 'name-asc' || sortType === 'name-desc') && { color: colors.textPrimary, fontWeight: '600' }
-              ]}>
-                İsim {sortType === 'name-asc' ? '↑' : sortType === 'name-desc' ? '↓' : ''}
-              </Text>
-            </TouchableOpacity>
+              let buttonText = '';
+              if (type === 'default') buttonText = 'Varsayılan';
+              if (type === 'name') buttonText = `İsim ${sortType === 'name-asc' ? '↑' : sortType === 'name-desc' ? '↓' : ''}`;
+              if (type === 'price') buttonText = `Fiyat ${sortType === 'price-asc' ? '↑' : sortType === 'price-desc' ? '↓' : ''}`;
 
-            <TouchableOpacity
-              style={[
-                styles.sortButton, 
-                { borderColor: colors.border },
-                (sortType === 'price-asc' || sortType === 'price-desc') && { backgroundColor: colors.primary, borderColor: colors.primary }
-              ]}
-              onPress={() => handleSortPress('price')}
-            >
-              <Text style={[
-                styles.sortButtonText, 
-                { color: colors.textSecondary },
-                (sortType === 'price-asc' || sortType === 'price-desc') && { color: colors.textPrimary, fontWeight: '600' }
-              ]}>
-                Fiyat {sortType === 'price-asc' ? '↑' : sortType === 'price-desc' ? '↓' : ''}
-              </Text>
-            </TouchableOpacity>
+              return (
+                <TouchableOpacity
+                  key={type}
+                  style={[
+                    styles.sortButton,
+                    { 
+                      backgroundColor, 
+                      borderColor,
+                      ...colors.shadows.small
+                    }
+                  ]}
+                  onPress={() => isDefault ? setSortType('default') : handleSortPress(type as 'name' | 'price')}
+                >
+                  <Text style={[
+                    styles.sortButtonText,
+                    { color: textColor },
+                    isActive && { fontWeight: '600' }
+                  ]}>
+                    {buttonText}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
         </View>
 
@@ -198,6 +205,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     fontSize: FontSize.body,
     marginBottom: 16,
+    borderWidth: 1,
   },
   emptyText: {
     textAlign: 'center',
