@@ -12,10 +12,23 @@ interface AssetListItemProps {
   onPress?: () => void;
 }
 
-// Artık basit ve temiz.
-const renderIcon = (asset: FinancialAsset) => (
-  <Image source={{ uri: asset.image }} style={{ width: '100%', height: '100%' }} />
-);
+// Tema destekli altın ikonu
+const AltinIcon: React.FC<{ asset: FinancialAsset }> = ({ asset }) => {
+  const colors = useThemeColors();
+
+  return (
+    <Image
+      source={{ uri: asset.image }}
+      style={{
+        width: '100%',
+        height: '100%',
+        borderRadius: 22,
+        borderWidth: 1,
+        borderColor: colors.border
+      }}
+    />
+  );
+};
 
 export const AltinListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) => {
   return (
@@ -23,7 +36,7 @@ export const AltinListItem: React.FC<AssetListItemProps> = ({ asset, index, onPr
       asset={asset}
       index={index}
       onPress={onPress}
-      renderIcon={renderIcon}
+      renderIcon={(asset) => <AltinIcon asset={asset} />}
       alisLabel={`Alış: ₺${asset.alis.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`}
       satisLabel={`Satış: ₺${asset.satis.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`}
       // Altın için ana değer Satış olduğundan, onu daha belirgin yapalım.

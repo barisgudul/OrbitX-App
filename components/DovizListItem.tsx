@@ -12,9 +12,23 @@ interface AssetListItemProps {
   onPress?: () => void;
 }
 
-const renderIcon = (asset: FinancialAsset) => (
-  <Image source={{ uri: asset.image }} style={{ width: 44, height: 44 }} />
-);
+// Tema destekli döviz ikonu
+const DovizIcon: React.FC<{ asset: FinancialAsset }> = ({ asset }) => {
+  const colors = useThemeColors();
+
+  return (
+    <Image
+      source={{ uri: asset.image }}
+      style={{
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        borderWidth: 1,
+        borderColor: colors.border
+      }}
+    />
+  );
+};
 
 export const DovizListItem: React.FC<AssetListItemProps> = ({ asset, index, onPress }) => {
   return (
@@ -22,7 +36,7 @@ export const DovizListItem: React.FC<AssetListItemProps> = ({ asset, index, onPr
       asset={asset}
       index={index}
       onPress={onPress}
-      renderIcon={renderIcon}
+      renderIcon={(asset) => <DovizIcon asset={asset} />}
       alisValue={`₺${asset.alis.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
       satisValue={`₺${asset.satis.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
     />

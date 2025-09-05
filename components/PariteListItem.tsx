@@ -12,16 +12,18 @@ interface AssetListItemProps {
   onPress?: () => void;
 }
 
-// BU FONKSİYON, SANATIN KENDİSİDİR.
-const renderIcon = (asset: FinancialAsset) => {
+// BU COMPONENT, SANATIN KENDİSİDİR - TEMA DESTEKLİ VERSİYON
+const PariteIcon: React.FC<{ asset: FinancialAsset }> = ({ asset }) => {
+  const colors = useThemeColors();
+
   // API'den gelen resim URL'sini '/' karakterine göre ikiye bölüyoruz.
   if (!asset.image) return null;
   const [flag1, flag2] = asset.image.split('/');
 
   return (
     <View style={styles.iconPairContainer}>
-      <Image source={{ uri: flag1 }} style={[styles.flag, styles.flagLeft]} />
-      <Image source={{ uri: flag2 }} style={[styles.flag, styles.flagRight]} />
+      <Image source={{ uri: flag1 }} style={[styles.flag, styles.flagLeft, { borderColor: colors.border }]} />
+      <Image source={{ uri: flag2 }} style={[styles.flag, styles.flagRight, { borderColor: colors.border }]} />
     </View>
   );
 };
@@ -32,7 +34,7 @@ export const PariteListItem: React.FC<AssetListItemProps> = ({ asset, index, onP
       asset={asset}
       index={index}
       onPress={onPress}
-      renderIcon={renderIcon}
+      renderIcon={(asset) => <PariteIcon asset={asset} />}
       // Paritelerde ondalık basamak sayısı daha fazla olur, bu yüzden 4 haneye ayarlıyoruz.
       alisValue={asset.alis.toLocaleString('tr-TR', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
       satisValue={asset.satis.toLocaleString('tr-TR', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
@@ -51,7 +53,7 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     borderWidth: 2,
-    borderColor: '#FFFFFF', // Bayrakların etrafında beyaz bir çerçeve, daha belirgin olmalarını sağlar.
+    // borderColor artık dinamik olarak tema renklerinden geliyor
     position: 'absolute',
   },
   flagLeft: {
